@@ -95,7 +95,19 @@ function withSecurityHeaders(res: NextResponse, opts: HeaderOpts) {
    *    runtime bootstrap and CSS Modules streaming. A nonce-based CSP is
    *    the next hardening step (see ADMIN_SECURITY.md).
    *  - frame-src allows the two embed providers we actually use. If you add
-   *    Loom / Wistia / etc, extend this allowlist. */
+   *    Loom / Wistia / etc, extend this allowlist.
+   *  - Admin routes need a slightly looser CSP because the Keystatic Cloud
+   *    admin shell loads its own webfont stylesheet from Google Fonts and,
+   *    more importantly, fetches content JSON/markdown DIRECTLY from
+   *    raw.githubusercontent.com (using SHA-pinned URLs returned by the
+   *    Keystatic Cloud GraphQL API). Without raw.githubusercontent.com in
+   *    connect-src, every editor view fails with "Failed to fetch". */
+  const adminConnect = opts.admin
+    ? ' https://raw.githubusercontent.com'
+    : '';
+  const adminStyle = opts.admin ? ' https://fonts.googleapis.com' : '';
+  const adminFont = opts.admin ? ' https://fonts.gstatic.com' : '';
+
   const csp = [
     `default-src 'self'`,
     `base-uri 'self'`,
@@ -103,12 +115,12 @@ function withSecurityHeaders(res: NextResponse, opts: HeaderOpts) {
     `form-action 'self' https://keystatic.cloud`,
     `frame-ancestors 'none'`,
     `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com`,
-    `style-src 'self' 'unsafe-inline'`,
+    `style-src 'self' 'unsafe-inline'${adminStyle}`,
     `img-src 'self' data: blob: https:`,
-    `font-src 'self' data:`,
+    `font-src 'self' data:${adminFont}`,
     `media-src 'self' blob: https://player.vimeo.com https://*.vimeocdn.com`,
     `frame-src 'self' https://player.vimeo.com https://www.youtube.com https://www.youtube-nocookie.com https://keystatic.cloud`,
-    `connect-src 'self' https://vitals.vercel-insights.com https://*.vercel-insights.com https://va.vercel-scripts.com https://api.keystatic.cloud https://keystatic.cloud`,
+    `connect-src 'self' https://vitals.vercel-insights.com https://*.vercel-insights.com https://va.vercel-scripts.com https://api.keystatic.cloud https://keystatic.cloud${adminConnect}`,
     `upgrade-insecure-requests`,
   ].join('; ');
 
