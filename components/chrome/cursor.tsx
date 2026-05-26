@@ -1,9 +1,12 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
 import { useCoarsePointer, useReducedMotion } from '@/lib/hooks/useReducedMotion';
 import styles from './cursor.module.css';
+
+/** Pixel offset from pointer to chip top-left in link/view/active states.
+ *  Keeps the label off the target so it never sits on the text/element. */
+const CHIP_OFFSET = { x: 12, y: 14 } as const;
 
 /**
  * Custom HUD-chip cursor — SPEC §6.2 + cursor redesign 2026-05-26.
@@ -18,18 +21,11 @@ import styles from './cursor.module.css';
  */
 export function CustomCursor() {
   const chipRef = useRef<HTMLDivElement | null>(null);
-  const pipRef = useRef<HTMLSpanElement | null>(null);
   const labelRef = useRef<HTMLSpanElement | null>(null);
   const stateRef = useRef<string>('default');
 
   const reduced = useReducedMotion();
   const coarse = useCoarsePointer();
-  const pathname = usePathname();
-
-  // Pathname-driven glyph is populated in Task 3. For now, empty string
-  // means "no glyph", and the pip stays a plain dot.
-  const sectionGlyph = '';
-  void pathname; // silence unused-var until Task 3 wires it
 
   useEffect(() => {
     document.body.classList.add('cursor-on');
@@ -82,11 +78,11 @@ export function CustomCursor() {
       cx += (mx - cx) * 0.18;
       cy += (my - cy) * 0.18;
       if (chipRef.current) {
-        // Offset the chip 12px right + 14px down of the actual pointer
-        // so the label never sits on the target — except in default
-        // state, where we keep the pip at the tip.
-        const offsetX = stateRef.current === 'default' ? 0 : 12;
-        const offsetY = stateRef.current === 'default' ? 0 : 14;
+        // Offset the chip right/down of the actual pointer so the label
+        // never sits on the target — except in default state, where we
+        // keep the pip at the tip.
+        const offsetX = stateRef.current === 'default' ? 0 : CHIP_OFFSET.x;
+        const offsetY = stateRef.current === 'default' ? 0 : CHIP_OFFSET.y;
         chipRef.current.style.transform = `translate3d(${cx + offsetX}px, ${cy + offsetY}px, 0)`;
       }
       raf = requestAnimationFrame(loop);
@@ -113,14 +109,9 @@ export function CustomCursor() {
       className={styles.chip}
       data-state="default"
       aria-hidden="true"
+      style={{ transform: 'translate3d(-100px, -100px, 0)' }}
     >
-      <span
-        ref={pipRef}
-        className={styles.pip}
-        data-glyph={sectionGlyph}
-      >
-        {sectionGlyph}
-      </span>
+      <span className={styles.pip} />
       <span ref={labelRef} className={styles.label} />
     </div>
   );
