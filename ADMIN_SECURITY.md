@@ -91,13 +91,70 @@ the route handler sees it.
 
 ## Day-to-day hygiene
 
-- **Rotate `KEYSTATIC_SECRET` every 90 days.** Generate a new value,
-  swap it on Vercel, redeploy. Existing sessions invalidate; you'll
-  need to re-log-in.
-- **Audit the GitHub App's authorised users every quarter.** Remove
-  anyone who no longer needs access.
-- **Review recent commits on `main`** — every admin edit is a commit.
-  Anything you didn't make is a signal to investigate.
+- **`KEYSTATIC_SECRET` rotation is automated.** The
+  `.github/workflows/rotate-keystatic-secret.yml` workflow runs on a
+  quarterly cron (1st of Jan / Apr / Jul / Oct, 09:00 UTC), generates
+  a new value, PATCHes it onto Vercel via the API, triggers a
+  redeploy, and opens a GitHub issue with the residual manual tasks.
+  Setup is in the next section.
+- **Manual hygiene** (the bot opens an issue reminding you to do
+  these — close it when done):
+  - Rotate `KEYSTATIC_GITHUB_CLIENT_SECRET` on the Keystatic GitHub
+    App and update Vercel. (GitHub doesn't let you regenerate via
+    API, so this part stays manual.)
+  - Audit the GitHub App's authorised users. Remove anyone who no
+    longer needs access.
+  - Skim recent commits on `main`. Every admin edit is a commit;
+    anything you didn't make is a signal to investigate.
+
+### Setting up the automated rotation
+
+One-time setup, ~5 minutes.
+
+**1. Create a Vercel API token.**
+Vercel → Account Settings → **Tokens** → **Create Token**.
+Name it "GitHub Actions — secret rotation". Scope it to the team
+that owns the portfolio project if you have one (otherwise it's
+account-wide; acceptable since it lives only in GitHub Secrets).
+Copy the token — it shows once.
+
+**2. Find your project ID and (if applicable) team ID.**
+Vercel → Project → **Settings → General**. Project ID is at the
+bottom. If the project is inside a Team, the team ID is in
+Account Settings → General (or in the URL of the team dashboard
+as `team_XXXX`).
+
+**3. Create a deploy hook.**
+Vercel → Project → **Settings → Git → Deploy Hooks** → **Create
+Hook**. Name: "Rotate Keystatic Secret". Branch: `main`. Copy the
+generated URL — it embeds its own secret, no auth header needed.
+
+**4. Add four GitHub repository secrets.**
+GitHub → repo → **Settings → Secrets and variables → Actions →
+Secrets → New repository secret**:
+
+| Name | Value |
+|---|---|
+| `VERCEL_TOKEN` | from step 1 |
+| `VERCEL_PROJECT_ID` | from step 2 |
+| `VERCEL_TEAM_ID` | from step 2, **only if applicable** (skip on personal accounts) |
+| `VERCEL_DEPLOY_HOOK_URL` | from step 3 |
+
+**5. Smoke-test it.**
+GitHub → repo → **Actions** tab → **Rotate KEYSTATIC_SECRET** in
+the left sidebar → **Run workflow** → **Run workflow** (green
+button). Watch the run; it should finish in ~30 seconds. Then:
+
+- Vercel → Project → Deployments → confirm a new production
+  deployment was queued.
+- After it finishes, open `/keystatic` — you'll need to sign in
+  again with GitHub. That confirms the new secret invalidated the
+  old session cookie.
+- Repo → Issues → confirm a new "Admin hardening checklist" issue
+  was opened with the manual follow-ups.
+
+From here on, the cron handles it. Use the manual trigger in an
+incident if you suspect leakage.
 
 ---
 
