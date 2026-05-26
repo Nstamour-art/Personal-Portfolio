@@ -32,7 +32,7 @@ export default function middleware(req: NextRequest) {
   const isAdmin = ADMIN_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   if (isAdmin) {
-    const gate = guardAdmin(req);
+    const gate = guardAdmin(req, pathname);
     if (gate) return withSecurityHeaders(gate, { admin: true, host });
   }
 
@@ -41,7 +41,7 @@ export default function middleware(req: NextRequest) {
 
 /* ── Admin gate ─────────────────────────────────────────────────────────── */
 
-function guardAdmin(req: NextRequest): NextResponse | null {
+function guardAdmin(req: NextRequest, pathname: string): NextResponse | null {
   /* Kill switch — flip ADMIN_ENABLED=false to disappear the admin without
    * redeploying the public site. Returns a generic 404 so probes don't
    * confirm the surface exists. */
@@ -61,15 +61,22 @@ function guardAdmin(req: NextRequest): NextResponse | null {
     }
   }
 
-  /* Per-IP rate limit — 30 requests / 60s window. Tune via env. */
-  const ip = getClientIp(req) ?? 'unknown';
-  const max = Number(process.env['ADMIN_RATELIMIT_MAX'] ?? 30);
-  const windowMs = Number(process.env['ADMIN_RATELIMIT_WINDOW_MS'] ?? 60_000);
-  if (!take(ip, max, windowMs)) {
-    return new NextResponse('Too Many Requests', {
-      status: 429,
-      headers: { 'Retry-After': String(Math.ceil(windowMs / 1000)) },
-    });
+  /* Per-IP rate limit — 30 requests / 60s window. Tune via env.
+   * Exempt /api/keystatic: Keystatic Cloud's admin UI fires many concurrent
+   * fetch() calls to this route for OAuth and config; throttling them causes
+   * "failed to fetch" errors. The API is already auth-gated by Keystatic
+   * Cloud, so the rate limit adds no real protection here. */
+  const isApiRoute = pathname.startsWith('/api/keystatic');
+  if (!isApiRoute) {
+    const ip = getClientIp(req) ?? 'unknown';
+    const max = Number(process.env['ADMIN_RATELIMIT_MAX'] ?? 30);
+    const windowMs = Number(process.env['ADMIN_RATELIMIT_WINDOW_MS'] ?? 60_000);
+    if (!take(ip, max, windowMs)) {
+      return new NextResponse('Too Many Requests', {
+        status: 429,
+        headers: { 'Retry-After': String(Math.ceil(windowMs / 1000)) },
+      });
+    }
   }
 
   return null;
