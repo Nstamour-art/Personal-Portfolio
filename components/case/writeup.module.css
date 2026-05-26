@@ -1,0 +1,38 @@
+.writeup {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 60px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+@media (max-width: 880px) {
+  .writeup {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.prose {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--fg-2);
+  max-width: 65ch;
+}
+
+.prose p + p {
+  margin-top: 1.2em;
+}
+
+.prose strong {
+  color: var(--fg);
+  font-weight: 500;
+}

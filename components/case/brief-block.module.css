@@ -1,0 +1,63 @@
+.brief {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 60px;
+  padding: 80px var(--pad);
+  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  align-items: start;
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+
+@media (max-width: 880px) {
+  .brief {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+.label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.briefText {
+  font-size: clamp(20px, 2.4vw, 32px);
+  line-height: 1.2;
+  letter-spacing: -0.018em;
+  color: var(--fg);
+  font-weight: 400;
+  max-width: 22ch;
+  margin: 0;
+}
+
+.snapshot {
+  margin-bottom: 32px;
+  color: var(--fg-2);
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px 40px;
+}
+
+.cell .k {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.cell .v {
+  font-size: 15px;
+  color: var(--fg-2);
+  line-height: 1.4;
+}

@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { BriefBlock } from '@/components/case/brief-block';
+import { CinematicHero } from '@/components/case/cinematic-hero';
+import { NextPrev } from '@/components/case/next-prev';
+import { ProcessGallery } from '@/components/case/process-gallery';
 import { PROJECTS } from '@/content/projects';
-import { getProject } from '@/lib/content';
+import { getNextProject, getPrevProject, getProject, getProjectIndex } from '@/lib/content';
 
 export function generateStaticParams() {
   return PROJECTS.map((p) => ({ slug: p.id }));
@@ -18,7 +22,11 @@ export async function generateMetadata({
   return {
     title: project.title,
     description: project.brief,
-    openGraph: { title: project.title, description: project.brief },
+    openGraph: {
+      title: project.title,
+      description: project.brief,
+      type: 'article',
+    },
   };
 }
 
@@ -30,17 +38,15 @@ export default async function CaseStudyPage({
   const { slug } = await params;
   const project = getProject(slug);
   if (!project) notFound();
+  const idx = getProjectIndex(slug);
+  const prev = getPrevProject(slug);
+  const next = getNextProject(slug);
   return (
-    <div className="container" style={{ paddingTop: 120, paddingBottom: 120 }}>
-      <p className="t-eyebrow" style={{ color: 'var(--muted)' }}>
-        Case study
-      </p>
-      <h1 className="t-h1" style={{ marginTop: 24 }}>
-        {project.title}
-      </h1>
-      <p className="t-body" style={{ marginTop: 16, color: 'var(--fg-2)' }}>
-        {project.brief}
-      </p>
-    </div>
+    <>
+      <CinematicHero project={project} index={idx + 1} total={PROJECTS.length} />
+      <BriefBlock project={project} />
+      <ProcessGallery project={project} />
+      <NextPrev prev={prev} next={next} />
+    </>
   );
 }
