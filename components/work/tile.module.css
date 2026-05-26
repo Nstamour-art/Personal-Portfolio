@@ -36,7 +36,7 @@
   top: 14px;
   display: flex;
   justify-content: space-between;
-  align-items: start;
+  align-items: flex-start;
   z-index: 2;
 }
 
@@ -47,7 +47,7 @@
   bottom: 14px;
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: flex-end;
   gap: 12px;
   z-index: 2;
 }

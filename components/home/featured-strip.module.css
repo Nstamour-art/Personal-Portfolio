@@ -7,7 +7,7 @@
 .head {
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: flex-end;
   margin-bottom: 32px;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--line);

@@ -59,7 +59,7 @@
   right: 12px;
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: flex-end;
   gap: 10px;
   font-family: var(--mono);
   font-size: 10.5px;
