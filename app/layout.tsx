@@ -1,10 +1,5 @@
 import type { CSSProperties } from 'react';
 import type { Metadata, Viewport } from 'next';
-import { Analytics } from '@vercel/analytics/next';
-import { CustomCursor } from '@/components/chrome/cursor';
-import { Footer } from '@/components/chrome/footer';
-import { NavRail } from '@/components/chrome/nav-rail';
-import { PageTransition } from '@/components/chrome/page-transition';
 import { SITE } from '@/content/site';
 import {
   THEME,
@@ -81,9 +76,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
    * paint. React 19 / Next.js 15 hoists these into <head>. */
   const fontHref = googleFontsHref(THEME);
 
+  /* Root layout is intentionally chrome-free. The public site's nav
+   * rail, page transitions, custom cursor, footer, and analytics
+   * live in app/(site)/layout.tsx so they only mount under the
+   * (site) route group. The /keystatic admin route renders directly
+   * inside this root layout, owning the full viewport without any
+   * site chrome contaminating its scroll container or typography. */
   return (
     <html lang="en" style={htmlStyle}>
-      <body className="nav-rail-mode caps">
+      <body>
         {fontHref && (
           <>
             <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -95,11 +96,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <link rel="stylesheet" href={fontHref} />
           </>
         )}
-        <CustomCursor />
-        <NavRail />
-        <PageTransition>{children}</PageTransition>
-        <Footer />
-        <Analytics />
+        {children}
       </body>
     </html>
   );

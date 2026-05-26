@@ -110,12 +110,14 @@ body.cursor-on [contenteditable='true'] {
   }
 }
 
-/* Nav rail mode pads the body so content clears the fixed rail. */
-body.nav-rail-mode {
+/* Nav-rail mode pads the site-group wrapper so content clears the
+ * fixed rail. Applied on the `(site)/layout.tsx` wrapper, not on
+ * <body>, so the /keystatic admin route can own the full viewport. */
+.nav-rail-mode {
   padding-left: var(--nav-rail-w);
 }
 @media (max-width: 720px) {
-  body.nav-rail-mode {
+  .nav-rail-mode {
     padding-left: 0;
     padding-top: 56px;
   }
@@ -228,17 +230,17 @@ button {
  * only. Body prose stays sentence-case. SPEC §2.
  * ──────────────────────────────────────────────────────────────────────── */
 
-body.caps .t-display,
-body.caps .t-h1,
-body.caps .t-h2,
-body.caps .t-h3,
-body.caps .caps-on,
-body.caps .tile-title,
-body.caps .hero-title,
-body.caps .marquee-word,
-body.caps .footer-big,
-body.caps .exp-role,
-body.caps .note-title {
+.caps .t-display,
+.caps .t-h1,
+.caps .t-h2,
+.caps .t-h3,
+.caps .caps-on,
+.caps .tile-title,
+.caps .hero-title,
+.caps .marquee-word,
+.caps .footer-big,
+.caps .exp-role,
+.caps .note-title {
   text-transform: uppercase;
   letter-spacing: -0.02em;
 }
