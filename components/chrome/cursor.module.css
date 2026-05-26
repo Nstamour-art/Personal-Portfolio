@@ -131,8 +131,13 @@
   opacity: 1;
 }
 
-/* Active state: wired by mousedown/mouseup listeners in Plan Task 4. */
-/* active: triggered on mousedown over link/view. Subtle pulse. */
+/* Active state: wired by mousedown/mouseup listeners in cursor.tsx.
+ * Note: the spec also called for transform: scale(1.08) on active, but
+ * the RAF loop writes inline `transform: translate3d(...)` every frame,
+ * which would override any CSS transform here. We preserve the visual
+ * intent (a clear "click" pulse) through the intensified box-shadow +
+ * pip ring below — to add scale, the RAF loop would need to compose
+ * `translate3d(...) scale(1.08)` when data-active is set. */
 .chip[data-active='1'] {
   transform-origin: top left;
 }

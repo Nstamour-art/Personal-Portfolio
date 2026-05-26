@@ -47,7 +47,7 @@ export function CustomCursor() {
   }, [reduced, coarse, onAdmin]);
 
   useEffect(() => {
-    if (reduced || coarse) return;
+    if (reduced || coarse || onAdmin) return;
 
     let mx = window.innerWidth / 2;
     let my = window.innerHeight / 2;
@@ -124,7 +124,7 @@ export function CustomCursor() {
       document.removeEventListener('mouseenter', show);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [reduced, coarse]);
+  }, [reduced, coarse, onAdmin]);
 
   if (reduced || coarse || onAdmin) return null;
 
