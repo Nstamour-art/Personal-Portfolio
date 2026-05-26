@@ -11,7 +11,14 @@ export type ParsedVideo =
   | { kind: 'file'; id: string; embedUrl: string; original: string; mime: string }
   | { kind: 'none'; original: string };
 
-const YOUTUBE_PARAMS = 'autoplay=1&rel=0&modestbranding=1&playsinline=1';
+/* `enablejsapi=1` is required for YouTube's postMessage protocol — it
+ * unlocks the play/pause/ended events that <VideoHero> uses to keep
+ * the parent overlay in sync (see lib/iframe-player-events.ts). The
+ * `origin` parameter scopes accepted commands to our domain at runtime
+ * and is appended dynamically in the embed component because it needs
+ * window.location.origin. */
+const YOUTUBE_PARAMS =
+  'autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1';
 const VIMEO_PARAMS = 'autoplay=1&title=0&byline=0&portrait=0&playsinline=1';
 
 const MIME_BY_EXT: Record<string, string> = {

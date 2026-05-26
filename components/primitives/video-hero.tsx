@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { attachIframePlayerEvents } from '@/lib/iframe-player-events';
 import { parseVideoUrl, platformLabel } from '@/lib/video';
 import type { ProceduralKey, Project } from '@/content/types';
 import { Placeholder } from './placeholder';
@@ -51,18 +52,37 @@ export function VideoHero({
   const video = parseVideoUrl(project.heroVideo);
   const [playing, setPlaying] = useState(false);
   const [failed, setFailed] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   /**
    * Local helper that mirrors `setPlaying` but also broadcasts to the
    * parent overlay. Used by the poster Play button and the ✕ Stop
-   * button. HTML5 video play/pause/ended call `onPlayingChange`
-   * directly (without touching the mount state) so the iframe stays
-   * up while the overlay fades in/out with the user's controls.
+   * button. HTML5 video play/pause/ended and YouTube/Vimeo player
+   * events call `onPlayingChange` directly (without touching the
+   * mount state) so the iframe stays up while the overlay fades
+   * in/out with the user's controls.
    */
   const setPlayingAndNotify = (next: boolean) => {
     setPlaying(next);
     onPlayingChange?.(next);
   };
+
+  /**
+   * When the iframe is mounted, subscribe to its postMessage stream
+   * so YouTube/Vimeo pause/end events bubble up to the parent
+   * overlay. Cleanup tears the message listener back down on unmount
+   * or when the user clicks ✕ Stop.
+   */
+  useEffect(() => {
+    if (!playing) return undefined;
+    if (video.kind !== 'youtube' && video.kind !== 'vimeo') return undefined;
+    if (!onPlayingChange) return undefined;
+    const iframe = iframeRef.current;
+    if (!iframe) return undefined;
+    return attachIframePlayerEvents(iframe, video.kind, (ev) => {
+      onPlayingChange(ev === 'play');
+    });
+  }, [playing, video.kind, onPlayingChange]);
 
   if (video.kind === 'none') {
     return (
@@ -152,6 +172,7 @@ export function VideoHero({
         </video>
       ) : (
         <iframe
+          ref={iframeRef}
           src={video.embedUrl}
           title={project.title || 'Video'}
           allow="autoplay; fullscreen; picture-in-picture"
