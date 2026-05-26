@@ -100,13 +100,26 @@ export function CustomCursor() {
       raf = requestAnimationFrame(loop);
     };
 
+    const onDown = () => {
+      if (stateRef.current === 'link' || stateRef.current === 'view') {
+        if (chipRef.current) chipRef.current.dataset['active'] = '1';
+      }
+    };
+    const onUp = () => {
+      if (chipRef.current) chipRef.current.dataset['active'] = '0';
+    };
+
     window.addEventListener('mousemove', onMove);
+    window.addEventListener('mousedown', onDown);
+    window.addEventListener('mouseup', onUp);
     document.addEventListener('mouseleave', hide);
     document.addEventListener('mouseenter', show);
     raf = requestAnimationFrame(loop);
 
     return () => {
       window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('mouseup', onUp);
       document.removeEventListener('mouseleave', hide);
       document.removeEventListener('mouseenter', show);
       if (raf) cancelAnimationFrame(raf);
