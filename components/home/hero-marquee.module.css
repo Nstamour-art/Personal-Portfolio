@@ -28,6 +28,10 @@
   /* ~25% smaller than the original clamp(96, 18vw, 280) so the
    * marquee reads as a strip rather than a hero. */
   font-size: clamp(72px, 13.5vw, 210px);
+  /* Dedicated `--font-marquee` slot so the editor can pick a
+   * display-grade font for this one element without affecting
+   * regular headlines. Falls back to --font-display in globals.css. */
+  font-family: var(--font-marquee);
   line-height: 0.86;
   letter-spacing: -0.05em;
   font-weight: 500;

@@ -8,7 +8,10 @@ import { PageTransition } from '@/components/chrome/page-transition';
 import { SITE } from '@/content/site';
 import {
   THEME,
+  accentColor,
+  displayStack,
   googleFontsHref,
+  marqueeStack,
   monoStack,
   sansStack,
 } from '@/content/theme';
@@ -56,13 +59,21 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  /* Inline CSS custom properties on <html> drive every `var(--sans)` /
-   * `var(--mono)` reference in globals.css and the CSS Modules. Setting
-   * them here means a Keystatic theme edit flows through end-to-end
-   * with just a redeploy. */
+  /* Inline CSS custom properties on <html> drive every `var(--...)`
+   * reference in globals.css and the CSS Modules. Setting them here
+   * means a Keystatic theme edit flows end-to-end with just a redeploy:
+   *   --sans         body / paragraph stack
+   *   --font-display h1/h2/h3 + display headlines stack
+   *   --mono         labels / captions / eyebrows stack
+   *   --font-marquee giant scrolling home-hero strip stack
+   *   --accent       hex accent used by brand mark / CTAs / focus
+   */
   const htmlStyle = {
     '--sans': sansStack(THEME),
+    '--font-display': displayStack(THEME),
     '--mono': monoStack(THEME),
+    '--font-marquee': marqueeStack(THEME),
+    '--accent': accentColor(THEME),
   } as CSSProperties;
 
   /* When the user has chosen a Google Font, render a single <link> to

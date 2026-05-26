@@ -18,7 +18,8 @@
   --muted: #7a7f8a;
   --muted-2: #4f535e;
 
-  /* Accent */
+  /* Accent — overridden inline on <html> by app/layout.tsx based on
+   * data/theme.json (editable from Keystatic → Theme). */
   --accent: #ff5b1f;
   --accent-ink: #0e1117;
 
@@ -36,9 +37,18 @@
   /* Type stacks — overridden inline on <html> by app/layout.tsx based
    * on data/theme.json (editable from Keystatic → Theme). These
    * `:root` defaults are pure system fonts so the site still renders
-   * correctly if the inline style is somehow missing. */
+   * correctly if the inline style is somehow missing.
+   *
+   * Slot model:
+   *   --sans         body / paragraph text
+   *   --font-display h1/h2/h3 headlines (cascades from --sans)
+   *   --mono         small labels / eyebrows / captions
+   *   --font-marquee giant home-hero scrolling words (cascades from display)
+   */
   --sans: 'Helvetica Neue', 'Helvetica', 'Arial', system-ui, sans-serif;
+  --font-display: var(--sans);
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-marquee: var(--font-display);
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -151,6 +161,12 @@ button {
  * Type scale — SPEC §2.
  * ──────────────────────────────────────────────────────────────────────── */
 
+.t-display,
+.t-h1,
+.t-h2,
+.t-h3 {
+  font-family: var(--font-display);
+}
 .t-display {
   font-size: clamp(56px, 11vw, 184px);
   line-height: 0.86;

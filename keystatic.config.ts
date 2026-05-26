@@ -544,14 +544,30 @@ export default config({
       format: 'json',
       schema: {
         sansFamily: fields.text({
-          label: 'Sans / body font',
+          label: 'Body & paragraph font',
           description:
-            'Any Google Fonts family name (e.g. "Inter", "Manrope", "DM Sans", "Space Grotesk"). Browse at https://fonts.google.com and copy the family name exactly. Leave blank to use the system sans stack (no webfont download).',
+            'Google Fonts family name (e.g. "Inter", "Manrope", "DM Sans"). Used for paragraphs, body copy, and anything not explicitly styled. Browse at https://fonts.google.com and copy the family name exactly. Leave blank to use the system sans stack (no webfont download).',
+        }),
+        displayFamily: fields.text({
+          label: 'Display & headline font',
+          description:
+            'Google Fonts family name. Used for h1 / h2 / h3 page titles, project titles, case study headlines, and the home hero name. Leave blank to inherit the body font.',
         }),
         monoFamily: fields.text({
-          label: 'Mono font (labels, captions, marquee, code)',
+          label: 'Mono / label font',
           description:
-            'Any Google Fonts family name (e.g. "IBM Plex Mono", "JetBrains Mono", "Geist Mono", "Space Mono"). Leave blank to use the system monospace stack.',
+            'Google Fonts family name (e.g. "IBM Plex Mono", "JetBrains Mono", "Geist Mono"). Used for small uppercase labels, eyebrows, captions, footer columns, and the nav rail. Leave blank for the system monospace stack.',
+        }),
+        marqueeFamily: fields.text({
+          label: 'Marquee font (giant scrolling words on home)',
+          description:
+            'Google Fonts family name. Applies only to the giant scrolling word strip on the home hero — often benefits from a distinct display-grade font like "Fraunces", "Playfair Display", or "Anton". Leave blank to inherit the display font.',
+        }),
+        accentColor: fields.text({
+          label: 'Accent colour (hex)',
+          description:
+            'Hex colour used for the brand mark, CTA arrows, focus rings, the marquee dot separator, and link hovers. Default: #FF5B1F. Aim for at least 4.5:1 contrast against the page background (#0E1117). Invalid values silently fall back to the default.',
+          defaultValue: '#FF5B1F',
         }),
       },
     }),

@@ -1,4 +1,7 @@
 {
   "sansFamily": "",
-  "monoFamily": "IBM Plex Mono"
+  "displayFamily": "",
+  "monoFamily": "IBM Plex Mono",
+  "marqueeFamily": "",
+  "accentColor": "#FF5B1F"
 }

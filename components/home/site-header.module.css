@@ -21,6 +21,7 @@
 }
 
 .name {
+  font-family: var(--font-display);
   font-size: clamp(40px, 6vw, 84px);
   line-height: 1;
   letter-spacing: -0.025em;
