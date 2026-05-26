@@ -10,7 +10,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://nstamour.vercel.app',
+    process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://nstamour.xyz',
   ),
   title: {
     default: `${SITE.name} — ${SITE.tagline}`,

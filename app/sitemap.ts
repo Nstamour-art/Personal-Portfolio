@@ -3,7 +3,7 @@ import { NOTES } from '@/content/notes';
 import { PROJECTS } from '@/content/projects';
 
 const BASE =
-  process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://nstamour.vercel.app';
+  process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://nstamour.xyz';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

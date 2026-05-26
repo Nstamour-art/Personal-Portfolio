@@ -28,14 +28,15 @@ const ADMIN_PREFIXES = ['/keystatic', '/api/keystatic'] as const;
 
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const host = req.headers.get('host') ?? undefined;
   const isAdmin = ADMIN_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   if (isAdmin) {
     const gate = guardAdmin(req);
-    if (gate) return withSecurityHeaders(gate, { admin: true });
+    if (gate) return withSecurityHeaders(gate, { admin: true, host });
   }
 
-  return withSecurityHeaders(NextResponse.next(), { admin: isAdmin });
+  return withSecurityHeaders(NextResponse.next(), { admin: isAdmin, host });
 }
 
 /* ── Admin gate ─────────────────────────────────────────────────────────── */
@@ -78,6 +79,7 @@ function guardAdmin(req: NextRequest): NextResponse | null {
 
 interface HeaderOpts {
   admin: boolean;
+  host?: string;
 }
 
 function withSecurityHeaders(res: NextResponse, opts: HeaderOpts) {
@@ -107,6 +109,13 @@ function withSecurityHeaders(res: NextResponse, opts: HeaderOpts) {
   res.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   res.headers.set('X-Content-Type-Options', 'nosniff');
   res.headers.set('X-Frame-Options', 'DENY');
+
+  /* Keep search engines off any non-canonical host (Vercel's `*.vercel.app`
+   * deploy URL, preview URLs). `nstamour.art` is handled by Vercel's
+   * domain-level 308 redirect, so it never reaches this code path. */
+  if (opts.host && !opts.host.endsWith('nstamour.xyz')) {
+    res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
   res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.headers.set(
     'Permissions-Policy',

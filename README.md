@@ -105,6 +105,8 @@ Alternatives that work but cost more setup:
    - `NEXT_PUBLIC_SITE_URL` — your production URL, no trailing slash.
 
 5. For the admin, follow the [admin security playbook](./ADMIN_SECURITY.md).
+6. For domain setup (`nstamour.xyz` apex + `nstamour.art` redirect),
+   follow the [domain setup playbook](./DOMAIN_SETUP.md).
 
 ---
 
