@@ -71,7 +71,7 @@ const storage =
 
 export default config({
   storage,
-  cloud: { project: 'amberlogiccreative/personal-portfolio' },
+  cloud: { project: 'nstamour-art/personal-portfolio' },
   ui: {
     brand: {
       /* Brand name shown beside the mark in the admin shell header. */
