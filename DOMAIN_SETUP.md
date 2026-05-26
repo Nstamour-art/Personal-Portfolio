@@ -100,15 +100,15 @@ SSL termination — DNS-only mode avoids the conflict.
 Project → Settings → Environment Variables. All for the **Production**
 environment unless noted.
 
-| Key                                  | Value                              | Notes                                    |
-|--------------------------------------|------------------------------------|------------------------------------------|
-| `NEXT_PUBLIC_SITE_URL`               | `https://nstamour.xyz`             | Canonical URL. No trailing slash.        |
-| `KEYSTATIC_REPO`                     | `Nstamour-art/Personal-Portfolio`  | Where Keystatic commits content.         |
-| `KEYSTATIC_GITHUB_CLIENT_ID`         | from the Keystatic GitHub App      | See `ADMIN_SECURITY.md` for setup.       |
-| `KEYSTATIC_GITHUB_CLIENT_SECRET`     | from the Keystatic GitHub App      | Treat as a password.                     |
-| `KEYSTATIC_SECRET`                   | `openssl rand -base64 32`          | Session signing key. 32+ chars.          |
-| `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | from the Keystatic GitHub App   | Public, becomes part of the auth URL.    |
-| `ADMIN_ALLOWED_IPS`                  | `your.home.ip,your.office.ip`      | Optional. Comma-separated IPs.           |
+| Key                  | Value                          | Notes                                  |
+|----------------------|--------------------------------|----------------------------------------|
+| `NEXT_PUBLIC_SITE_URL` | `https://nstamour.xyz`       | Canonical URL. No trailing slash.      |
+| `ADMIN_ALLOWED_IPS`  | `your.home.ip,your.office.ip` | Optional. Comma-separated IPs.         |
+
+That's it. The Keystatic admin authenticates through Keystatic Cloud
+(<https://keystatic.cloud>), which manages its own GitHub App against
+the connected repo — no admin env vars live in Vercel. Editor access
+is controlled from the Keystatic Cloud project dashboard.
 
 After saving, hit **Deployments → Redeploy** on the latest production
 deploy so the new vars take effect.

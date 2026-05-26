@@ -4,12 +4,15 @@ import { collection, config, fields, singleton } from '@keystatic/core';
  * Keystatic schema — mirrors content/types.ts (SPEC §5).
  *
  * Storage strategy:
- *  - In dev (no env vars set), Keystatic writes to the working directory.
- *    Run `pnpm content` after an edit to refresh data/_generated/*.json,
- *    or restart `pnpm dev`.
- *  - In production (Vercel), set the KEYSTATIC_GITHUB_* env vars from the
- *    Keystatic GitHub-app setup flow. Edits become commits on the live
- *    repo, which trigger a new Vercel deploy + the prebuild codegen.
+ *  - In local dev (when VERCEL is unset), storage is `local` — Keystatic
+ *    writes directly to the working directory. Run `pnpm content` after
+ *    an edit to refresh data/_generated/*.json, or restart `pnpm dev`.
+ *  - On any Vercel deploy, storage is `cloud` — auth and GitHub commits
+ *    are handled by Keystatic Cloud (keystatic.cloud), which manages its
+ *    own GitHub App against the connected repo. Zero env vars in the
+ *    app itself; project identity lives in the `cloud.project` field
+ *    below. Editor management (who can sign in) is done from the
+ *    Keystatic Cloud dashboard.
  *
  * Disciplines, procedural keys, and span keys are typed enums and live in
  * Keystatic as `select`/`multiselect` so the editor can't drift from the
@@ -47,20 +50,14 @@ const SPAN_OPTIONS = [
   { label: 'Fill remaining', value: 's-fill' },
 ] as const;
 
-const githubEnv = {
-  repo: process.env['KEYSTATIC_REPO'] ?? '',
-};
-
 const storage =
-  process.env['KEYSTATIC_GITHUB_CLIENT_ID'] && githubEnv.repo
-    ? ({
-        kind: 'github',
-        repo: githubEnv.repo as `${string}/${string}`,
-      } as const)
+  process.env['VERCEL'] === '1'
+    ? ({ kind: 'cloud' } as const)
     : ({ kind: 'local' } as const);
 
 export default config({
   storage,
+  cloud: { project: 'amberlogiccreative/personal-portfolio' },
   ui: {
     brand: {
       name: 'Portfolio 26 — Admin',
