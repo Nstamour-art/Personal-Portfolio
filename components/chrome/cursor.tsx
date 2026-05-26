@@ -5,23 +5,26 @@ import { usePathname } from 'next/navigation';
 import { useCoarsePointer, useReducedMotion } from '@/lib/hooks/useReducedMotion';
 import styles from './cursor.module.css';
 
-/** Pixel offset from pointer to chip top-left in link/view/active states.
- *  Keeps the label off the target so it never sits on the text/element. */
-const CHIP_OFFSET = { x: 12, y: 14 } as const;
-
 /**
  * Custom HUD-chip cursor — SPEC §6.2 + cursor redesign 2026-05-26.
  *
- * One fixed chip follows the pointer with a RAF lerp. Reads `data-cursor`
- * and `data-cursor-label` from the closest ancestor of the pointer target
- * to switch state. The leading pip scales by state; the label slides in
- * when there is something to interact with.
+ * Structure: a zero-size root follows the pointer via a RAF lerp. Two
+ * absolutely-positioned children:
+ *   - pip  → centered on the pointer; scales by state and may become
+ *            a section glyph (◆/◇/✉/●) on hover.
+ *   - pill → anchored 12px right of the pointer; fades in on hover
+ *            with the contextual label.
+ *
+ * This means the pip IS the cursor tip (no offset) and the pill grows
+ * out beside it — visible right where the user's eye is.
  *
  * Hidden entirely on coarse pointers, when prefers-reduced-motion: reduce,
- * and on the /keystatic admin shell (Task 3 wires that exclusion).
+ * and on the /keystatic admin shell.
  */
 export function CustomCursor() {
-  const chipRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const pipRef = useRef<HTMLSpanElement | null>(null);
+  const pillRef = useRef<HTMLDivElement | null>(null);
   const labelRef = useRef<HTMLSpanElement | null>(null);
   const stateRef = useRef<string>('default');
 
@@ -30,9 +33,8 @@ export function CustomCursor() {
   const pathname = usePathname();
 
   /* Pathname-driven section glyph for the pip. Empty string keeps the
-   * pip as a plain dot. The glyph only renders when state is link/view/
-   * active (handled by CSS — default state hides the chip body and the
-   * pip falls back to a small solid dot via state-scoped sizing). */
+   * pip as a plain dot. The glyph only surfaces on link/view states
+   * (handled by CSS — default state hides it via color: transparent). */
   const sectionGlyph = glyphForPath(pathname);
 
   /* Admin shell keeps native pointer — no custom chip on /keystatic/*. */
@@ -64,11 +66,11 @@ export function CustomCursor() {
       const label = el?.dataset['cursorLabel'] ?? '';
       if (stateRef.current !== next) {
         stateRef.current = next;
-        if (chipRef.current) chipRef.current.dataset['state'] = next;
+        if (rootRef.current) rootRef.current.dataset['state'] = next;
       }
       if (labelRef.current) {
-        // Fallback labels: link → '→', view → 'View'. Otherwise use the
-        // data attribute. Default state has no label regardless.
+        /* Fallback labels: link → "→", view → "View". Otherwise use the
+         * data attribute. Default state has no label regardless. */
         const resolved =
           next === 'default'
             ? ''
@@ -77,36 +79,34 @@ export function CustomCursor() {
       }
     };
 
+    const onDown = () => {
+      if (stateRef.current === 'link' || stateRef.current === 'view') {
+        if (rootRef.current) rootRef.current.dataset['active'] = '1';
+      }
+    };
+    const onUp = () => {
+      if (rootRef.current) rootRef.current.dataset['active'] = '0';
+    };
+
     const hide = () => {
-      if (chipRef.current) chipRef.current.style.opacity = '0';
+      if (rootRef.current) rootRef.current.style.opacity = '0';
     };
     const show = () => {
-      // Opacity is now controlled per-state in CSS — restore inline
-      // opacity to empty so the CSS rule takes over.
-      if (chipRef.current) chipRef.current.style.opacity = '';
+      /* Opacity is controlled in CSS for default; reset inline to ''
+       * so the CSS rule takes over again. */
+      if (rootRef.current) rootRef.current.style.opacity = '';
     };
 
     const loop = () => {
       cx += (mx - cx) * 0.18;
       cy += (my - cy) * 0.18;
-      if (chipRef.current) {
-        // Offset the chip right/down of the actual pointer so the label
-        // never sits on the target — except in default state, where we
-        // keep the pip at the tip.
-        const offsetX = stateRef.current === 'default' ? 0 : CHIP_OFFSET.x;
-        const offsetY = stateRef.current === 'default' ? 0 : CHIP_OFFSET.y;
-        chipRef.current.style.transform = `translate3d(${cx + offsetX}px, ${cy + offsetY}px, 0)`;
+      if (rootRef.current) {
+        /* Root is a zero-size element. Translating it puts the pip's
+         * center (translate(-50%, -50%)) exactly on the pointer, and
+         * the pill's left edge 12px to the right (its own translate). */
+        rootRef.current.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
       }
       raf = requestAnimationFrame(loop);
-    };
-
-    const onDown = () => {
-      if (stateRef.current === 'link' || stateRef.current === 'view') {
-        if (chipRef.current) chipRef.current.dataset['active'] = '1';
-      }
-    };
-    const onUp = () => {
-      if (chipRef.current) chipRef.current.dataset['active'] = '0';
     };
 
     window.addEventListener('mousemove', onMove);
@@ -130,16 +130,18 @@ export function CustomCursor() {
 
   return (
     <div
-      ref={chipRef}
-      className={styles.chip}
+      ref={rootRef}
+      className={styles.root}
       data-state="default"
       aria-hidden="true"
       style={{ transform: 'translate3d(-100px, -100px, 0)' }}
     >
-      <span className={styles.pip} data-glyph={sectionGlyph}>
+      <span ref={pipRef} className={styles.pip} data-glyph={sectionGlyph}>
         {sectionGlyph}
       </span>
-      <span ref={labelRef} className={styles.label} />
+      <div ref={pillRef} className={styles.pill}>
+        <span ref={labelRef} className={styles.label} />
+      </div>
     </div>
   );
 }
