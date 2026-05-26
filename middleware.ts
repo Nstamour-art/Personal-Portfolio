@@ -42,6 +42,25 @@ export default function middleware(req: NextRequest) {
 /* ── Admin gate ─────────────────────────────────────────────────────────── */
 
 function guardAdmin(req: NextRequest): NextResponse | null {
+  /* Misconfiguration guard — on any Vercel deploy, refuse to serve the
+   * admin unless GitHub-storage credentials are present. Without them,
+   * Keystatic silently falls back to local mode (no auth gate, edits
+   * silently fail because the filesystem is read-only). A 503 with a
+   * clear message makes the misconfiguration loud and impossible to
+   * miss, instead of rendering an unauthenticated admin UI.
+   *
+   * Local dev (`pnpm dev`, where VERCEL is unset) is unaffected — local
+   * mode is the intended dev experience. */
+  if (
+    process.env['VERCEL'] === '1' &&
+    !(process.env['KEYSTATIC_GITHUB_CLIENT_ID'] && process.env['KEYSTATIC_REPO'])
+  ) {
+    return new NextResponse(
+      'Admin not configured. Set KEYSTATIC_GITHUB_CLIENT_ID, KEYSTATIC_GITHUB_CLIENT_SECRET, KEYSTATIC_REPO, KEYSTATIC_SECRET, and NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG in Vercel → Project → Settings → Environment Variables, then redeploy. See ADMIN_SECURITY.md.',
+      { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } },
+    );
+  }
+
   /* Kill switch — flip ADMIN_ENABLED=false to disappear the admin without
    * redeploying the public site. Returns a generic 404 so probes don't
    * confirm the surface exists. */
