@@ -148,18 +148,10 @@ curl -s https://nstamour.xyz | grep "og:url\|og:image"
 
 ---
 
-## 5. Side note — contact email
+## 5. Contact email
 
-`data/site.json` currently has `nstamour.work@gmail.com` as the contact
-email. Once you have `nstamour.xyz` set up, you might want a vanity
-address like `hello@nstamour.xyz` or `studio@nstamour.xyz` that forwards
-to Gmail.
-
-Most domain registrars include email forwarding free. To switch:
-
-1. Set up the forward at your registrar
-   (e.g. `hello@nstamour.xyz → nstamour.work@gmail.com`).
-2. Edit `/keystatic` → Site config → Contact email → save.
-
-The new address propagates through the contact page, the OG cards, and
-the email links in the footer automatically.
+The site's contact address is stored in `data/site.json` and exposed
+through `/keystatic` → Site config → Contact email. It propagates
+automatically to the contact page, footer, and Open Graph cards.
+Current value: `hello@nstamour.xyz` (forwards to a personal inbox
+via registrar-side forwarding).

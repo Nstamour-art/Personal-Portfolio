@@ -61,7 +61,7 @@ window.SITE = {
   tagline: "Motion artist & AI workflow engineer",
   manifesto: "Designing in motion. Building with systems. Telling stories with frames, code, and process.",
   location: "Montréal — remote",
-  email: "nstamour.work@gmail.com",
+  email: "hello@nstamour.xyz",
 
   // Social links — leave href empty ("#") to render as placeholder
   socials: [
