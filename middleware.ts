@@ -95,13 +95,13 @@ function withSecurityHeaders(res: NextResponse, opts: HeaderOpts) {
     `object-src 'none'`,
     `form-action 'self' https://keystatic.cloud`,
     `frame-ancestors 'none'`,
-    `script-src 'self' 'unsafe-inline' 'unsafe-eval'`,
+    `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com`,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob: https:`,
     `font-src 'self' data:`,
     `media-src 'self' blob: https://player.vimeo.com https://*.vimeocdn.com`,
     `frame-src 'self' https://player.vimeo.com https://www.youtube.com https://www.youtube-nocookie.com https://keystatic.cloud`,
-    `connect-src 'self' https://vitals.vercel-insights.com https://*.vercel-insights.com https://api.keystatic.cloud https://keystatic.cloud`,
+    `connect-src 'self' https://vitals.vercel-insights.com https://*.vercel-insights.com https://va.vercel-scripts.com https://api.keystatic.cloud https://keystatic.cloud`,
     `upgrade-insecure-requests`,
   ].join('; ');
 
