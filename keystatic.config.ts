@@ -90,7 +90,7 @@ export default config({
               width: 24,
               height: 24,
               fontFamily:
-                '"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
+                'var(--mono, "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace)',
               fontWeight: 600,
               fontSize: 16,
               lineHeight: 1,
@@ -114,6 +114,7 @@ export default config({
       Work: ['projects'],
       Notes: ['notes'],
       About: ['experience', 'skills'],
+      Theme: ['theme'],
     },
   },
 
@@ -534,6 +535,24 @@ export default config({
             itemLabel: (props) => props.fields.h.value || 'Group',
           },
         ),
+      },
+    }),
+
+    theme: singleton({
+      label: 'Theme',
+      path: 'data/theme',
+      format: 'json',
+      schema: {
+        sansFamily: fields.text({
+          label: 'Sans / body font',
+          description:
+            'Any Google Fonts family name (e.g. "Inter", "Manrope", "DM Sans", "Space Grotesk"). Browse at https://fonts.google.com and copy the family name exactly. Leave blank to use the system sans stack (no webfont download).',
+        }),
+        monoFamily: fields.text({
+          label: 'Mono font (labels, captions, marquee, code)',
+          description:
+            'Any Google Fonts family name (e.g. "IBM Plex Mono", "JetBrains Mono", "Geist Mono", "Space Mono"). Leave blank to use the system monospace stack.',
+        }),
       },
     }),
   },
