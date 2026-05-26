@@ -28,6 +28,9 @@ interface ProjectFront {
   disciplines: DisciplineId[];
   primary: DisciplineId;
   featured?: boolean;
+  draft?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
   pitch?: string;
   brief: string;
   summary: string;
@@ -62,6 +65,12 @@ function bodyToWriteup(body: string): string[] {
 
 export const PROJECTS: Project[] = entries
   .slice()
+  /* Drafts are excluded from the public-facing list. They still live in
+   * data/projects/<slug>/ on disk and remain editable in Keystatic, but
+   * /work, the home featured strip, prev/next navigation, and
+   * generateStaticParams all derive from PROJECTS, so an unset `draft`
+   * flag publishes everywhere automatically. */
+  .filter((e) => e.frontmatter.draft !== true)
   .sort(
     (a, b) =>
       (a.frontmatter.order ?? 9999) - (b.frontmatter.order ?? 9999),
@@ -95,6 +104,8 @@ export const PROJECTS: Project[] = entries
       })),
     };
     if (f.featured !== undefined) project.featured = f.featured;
+    if (f.seoTitle) project.seoTitle = f.seoTitle;
+    if (f.seoDescription) project.seoDescription = f.seoDescription;
     if (f.pitch !== undefined) project.pitch = f.pitch;
     if (hero) project.hero = hero;
     if (f.heroVideo !== undefined) project.heroVideo = f.heroVideo;

@@ -60,6 +60,11 @@ export interface Project {
   output?: string;
 
   featured?: boolean;
+  draft?: boolean;
+
+  /** Optional per-entry overrides for <title> and meta description. */
+  seoTitle?: string;
+  seoDescription?: string;
 
   ph?: ProceduralKey;
   span?: SpanKey;
@@ -74,6 +79,11 @@ export interface Note {
   body: string;
   cover?: MediaSlot;
   pinned?: boolean;
+  draft?: boolean;
+
+  /** Optional per-entry overrides for <title> and meta description. */
+  seoTitle?: string;
+  seoDescription?: string;
 }
 
 export interface Social {
@@ -115,11 +125,10 @@ export interface EditorialCopy {
     typeHeadline?: string;
     typeRoleStrip?: string[];
     typeMetaGrid?: { k: string; v: string }[];
-    reelEyebrow?: string;
-    reelMeta?: string;
-    reelHeadline?: string;
-    reelBlurb?: string;
-    reelNowPlaying?: string;
+  };
+  notes: {
+    eyebrowPrefix: string;
+    lede: string;
   };
   work: {
     eyebrowPrefix: string;

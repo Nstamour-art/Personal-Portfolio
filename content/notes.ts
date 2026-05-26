@@ -8,6 +8,9 @@ interface NoteFront {
   kind: string;
   summary: string;
   pinned?: boolean;
+  draft?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
   /* `coverSrc` is `null` when the Keystatic image field hasn't been
    * filled. The mapper coalesces it to '' so the cover renderer
    * falls back to the procedural placeholder. */
@@ -25,20 +28,28 @@ const entries = notesData as RawEntry[];
 
 export const NOTES: Note[] = entries
   .slice()
+  /* Drafts are excluded — see content/projects.ts for the rationale. */
+  .filter((e) => e.frontmatter.draft !== true)
   .sort(
     (a, b) =>
       (a.frontmatter.order ?? 9999) - (b.frontmatter.order ?? 9999),
   )
-  .map((e) => ({
-    id: e.slug,
-    title: e.frontmatter.title,
-    date: e.frontmatter.date,
-    kind: e.frontmatter.kind,
-    summary: e.frontmatter.summary,
-    pinned: e.frontmatter.pinned ?? false,
-    cover: {
-      src: e.frontmatter.coverSrc ?? '',
-      alt: e.frontmatter.coverAlt ?? '',
-    },
-    body: e.body,
-  }));
+  .map((e) => {
+    const f = e.frontmatter;
+    const note: Note = {
+      id: e.slug,
+      title: f.title,
+      date: f.date,
+      kind: f.kind,
+      summary: f.summary,
+      pinned: f.pinned ?? false,
+      cover: {
+        src: f.coverSrc ?? '',
+        alt: f.coverAlt ?? '',
+      },
+      body: e.body,
+    };
+    if (f.seoTitle) note.seoTitle = f.seoTitle;
+    if (f.seoDescription) note.seoDescription = f.seoDescription;
+    return note;
+  });

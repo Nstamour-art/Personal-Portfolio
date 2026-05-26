@@ -1,4 +1,5 @@
 import { Analytics } from '@vercel/analytics/next';
+import { Announcement } from '@/components/chrome/announcement';
 import { CustomCursor } from '@/components/chrome/cursor';
 import { Footer } from '@/components/chrome/footer';
 import { NavRail } from '@/components/chrome/nav-rail';
@@ -20,6 +21,7 @@ export default function SiteLayout({
 }) {
   return (
     <div className="nav-rail-mode caps">
+      <Announcement />
       <CustomCursor />
       <NavRail />
       <PageTransition>{children}</PageTransition>

@@ -110,7 +110,7 @@ export default config({
     navigation: {
       /* Group the schema by where the content actually surfaces on the
        * site, instead of the abstract collections/singletons split. */
-      Pages: ['editorial', 'site'],
+      Pages: ['editorial', 'site', 'announcement'],
       Work: ['projects'],
       Notes: ['notes'],
       About: ['experience', 'skills'],
@@ -174,6 +174,23 @@ export default config({
           label: 'Featured',
           description: 'Shows as the home-page hero project.',
           defaultValue: false,
+        }),
+        draft: fields.checkbox({
+          label: 'Draft',
+          description:
+            'When checked, the project is hidden from /work, the home featured strip, and prev/next navigation. The case study page returns 404 until unchecked. Use for in-progress entries you want to save without publishing.',
+          defaultValue: false,
+        }),
+        seoTitle: fields.text({
+          label: 'SEO title override',
+          description:
+            'Optional. Replaces the default <title> on the case-study page. Leave blank to use the project title.',
+        }),
+        seoDescription: fields.text({
+          label: 'SEO description override',
+          description:
+            'Optional. Replaces the default meta description (and Open Graph description) on the case-study page. Leave blank to use the project brief.',
+          multiline: true,
         }),
         pitch: fields.text({
           label: 'One-line pitch',
@@ -302,6 +319,23 @@ export default config({
           description: 'Surfaces in the home-page notes strip.',
           defaultValue: false,
         }),
+        draft: fields.checkbox({
+          label: 'Draft',
+          description:
+            'When checked, the note is hidden from /notes and the home notes strip, and direct access returns 404 until unchecked.',
+          defaultValue: false,
+        }),
+        seoTitle: fields.text({
+          label: 'SEO title override',
+          description:
+            'Optional. Replaces the default <title> on the note page. Leave blank to use the note title.',
+        }),
+        seoDescription: fields.text({
+          label: 'SEO description override',
+          description:
+            'Optional. Replaces the default meta description. Leave blank to use the note summary.',
+          multiline: true,
+        }),
         coverSrc: fields.image({
           label: 'Cover image',
           description:
@@ -408,11 +442,19 @@ export default config({
               itemLabel: (props) => props.fields.k.value || 'Row',
             },
           ),
-          reelEyebrow: fields.text({ label: 'Reel eyebrow' }),
-          reelMeta: fields.text({ label: 'Reel meta' }),
-          reelHeadline: fields.text({ label: 'Reel headline' }),
-          reelBlurb: fields.text({ label: 'Reel blurb', multiline: true }),
-          reelNowPlaying: fields.text({ label: 'Reel now-playing label' }),
+        }),
+        notes: fields.object({
+          eyebrowPrefix: fields.text({
+            label: 'Notes index eyebrow prefix',
+            description:
+              'Small label above the /notes page title. The current count of notes is appended automatically, e.g. "Notes & writing · 3".',
+          }),
+          lede: fields.text({
+            label: 'Notes index lede paragraph',
+            description:
+              'Short paragraph beside the /notes page title.',
+            multiline: true,
+          }),
         }),
         work: fields.object({
           eyebrowPrefix: fields.text({ label: 'Eyebrow prefix' }),
@@ -535,6 +577,34 @@ export default config({
             itemLabel: (props) => props.fields.h.value || 'Group',
           },
         ),
+      },
+    }),
+
+    announcement: singleton({
+      label: 'Announcement bar',
+      path: 'data/announcement',
+      format: 'json',
+      schema: {
+        enabled: fields.checkbox({
+          label: 'Enabled',
+          description:
+            'When checked, a thin banner appears above every public page (home, work, notes, studio, contact). When unchecked, the banner renders nothing — zero DOM, zero layout shift. Use as a kill switch.',
+          defaultValue: false,
+        }),
+        message: fields.text({
+          label: 'Message',
+          description:
+            'e.g. "Booking Q3 2026 — limited spots." Keep it short; the banner is one line at desktop.',
+        }),
+        ctaLabel: fields.text({
+          label: 'CTA label',
+          description: 'Optional. e.g. "Get in touch". Leave blank to hide.',
+        }),
+        ctaHref: fields.text({
+          label: 'CTA link',
+          description:
+            'Optional. Absolute URL (https://…) opens in a new tab. Relative paths (e.g. /contact) open in the same tab. Must be set together with the CTA label.',
+        }),
       },
     }),
 

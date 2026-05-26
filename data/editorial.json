@@ -13,12 +13,11 @@
       { "k": "Based", "v": "Montréal — remote" },
       { "k": "Selected clients", "v": "Vubiquity, Food Network, Xogot, Architect Films." },
       { "k": "Status", "v": "Currently in a full-time role." }
-    ],
-    "reelEyebrow": "Showreel — 2026 selection",
-    "reelMeta": "02:14 · 4K · 24fps",
-    "reelHeadline": "Frames, systems, shipped.",
-    "reelBlurb": "A motion artist and AI workflow engineer. Selected work across broadcast, independent film and product. Currently building tools that help frames ship faster.",
-    "reelNowPlaying": "Now playing"
+    ]
+  },
+  "notes": {
+    "eyebrowPrefix": "Notes & writing",
+    "lede": "Process notes, essays, and tooling logs. Most started as private documentation that turned out to be worth sharing."
   },
   "work": {
     "eyebrowPrefix": "Work",
