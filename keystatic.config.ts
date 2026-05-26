@@ -1,3 +1,4 @@
+import { createElement } from 'react';
 import { collection, config, fields, singleton } from '@keystatic/core';
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -73,11 +74,46 @@ export default config({
   cloud: { project: 'amberlogiccreative/personal-portfolio' },
   ui: {
     brand: {
-      name: 'Portfolio 26 — Admin',
+      /* Brand name shown beside the mark in the admin shell header. */
+      name: 'N. St-Amour — Folio 26',
+      /* Brand mark — a stylised "N" in IBM Plex Mono with the site accent.
+       * The font is already loaded site-wide via @fontsource imports in
+       * app/layout.tsx, so it's available inside the Keystatic shell. */
+      mark: ({ colorScheme }) =>
+        createElement(
+          'span',
+          {
+            style: {
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 24,
+              height: 24,
+              fontFamily:
+                '"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
+              fontWeight: 600,
+              fontSize: 16,
+              lineHeight: 1,
+              letterSpacing: '-0.02em',
+              color: colorScheme === 'dark' ? '#FF5B1F' : '#C53F0E',
+              border: `1.5px solid ${
+                colorScheme === 'dark' ? '#FF5B1F' : '#C53F0E'
+              }`,
+              borderRadius: 4,
+              userSelect: 'none',
+            },
+            'aria-hidden': 'true',
+          },
+          'N',
+        ),
     },
     navigation: {
-      Content: ['projects', 'notes'],
-      'Site copy': ['site', 'editorial', 'experience', 'skills'],
+      /* Group the schema by where the content actually surfaces on the
+       * site, instead of the abstract collections/singletons split. */
+      Pages: ['editorial', 'site'],
+      Work: ['projects'],
+      Notes: ['notes'],
+      About: ['experience', 'skills'],
     },
   },
 
