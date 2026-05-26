@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import { VideoHero } from '@/components/primitives/video-hero';
 import type { Project } from '@/content/types';
@@ -15,6 +18,13 @@ export function CinematicHero({ project, index, total }: CinematicHeroProps) {
   const totalPadded = String(total).padStart(2, '0');
   const hasMedia = Boolean(project.heroVideo) || Boolean(project.hero?.src);
 
+  /* When the embedded video is actively playing, fade out the entire
+   * title/back/counter/meta overlay (and the gradient behind it) so
+   * the playback surface is unobscured. VideoHero broadcasts the
+   * state; for iframes it's coarse (play vs ✕ Stop), for HTML5
+   * <video> it follows native play/pause/ended. */
+  const [videoPlaying, setVideoPlaying] = useState(false);
+
   return (
     <section className={styles.hero}>
       <div className={styles.surface}>
@@ -24,9 +34,13 @@ export function CinematicHero({ project, index, total }: CinematicHeroProps) {
           labelText={project.hero?.alt || `${project.title} — hero image`}
           sizes="100vw"
           priority
+          onPlayingChange={setVideoPlaying}
         />
       </div>
-      <div className={styles.overlay}>
+      <div
+        className={`${styles.overlay} ${videoPlaying ? styles.overlayHidden : ''}`}
+        aria-hidden={videoPlaying || undefined}
+      >
         <div className={styles.top}>
           <Link href="/work" className={styles.back} data-cursor="link">
             <span aria-hidden="true">←</span>

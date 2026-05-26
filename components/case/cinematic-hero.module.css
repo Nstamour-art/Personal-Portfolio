@@ -26,10 +26,30 @@
     rgba(14, 17, 23, 0.85) 100%
   );
   pointer-events: none;
+  opacity: 1;
+  transition: opacity 320ms ease;
 }
 
 .overlay > * {
   pointer-events: auto;
+}
+
+/* When a video is actively playing, fade the title/back/counter/meta
+ * (and the legibility gradient behind them) out of the way. The ✕
+ * Stop button lives inside <VideoHero> on a sibling layer above the
+ * overlay, so it stays interactive throughout. */
+.overlayHidden {
+  opacity: 0;
+}
+
+.overlayHidden > * {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    transition: none;
+  }
 }
 
 .top {

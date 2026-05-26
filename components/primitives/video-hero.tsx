@@ -13,6 +13,20 @@ interface VideoHeroProps {
   phOverride?: ProceduralKey;
   sizes?: string;
   priority?: boolean;
+  /**
+   * Fires when the player's active-playback state changes — used by
+   * parents like <CinematicHero> to fade out their overlay while a
+   * video is actively playing.
+   *
+   * For iframe embeds (YouTube/Vimeo) we can't observe pause inside
+   * the iframe, so the signal is coarse-grained: `true` when the user
+   * clicks Play and the iframe mounts, `false` when they click ✕ Stop.
+   *
+   * For HTML5 <video> embeds the signal is fine-grained and tracks
+   * the native play/pause/ended events, so pausing via the controls
+   * also reveals the overlay again.
+   */
+  onPlayingChange?: (playing: boolean) => void;
 }
 
 /**
@@ -32,10 +46,23 @@ export function VideoHero({
   phOverride,
   sizes,
   priority,
+  onPlayingChange,
 }: VideoHeroProps) {
   const video = parseVideoUrl(project.heroVideo);
   const [playing, setPlaying] = useState(false);
   const [failed, setFailed] = useState(false);
+
+  /**
+   * Local helper that mirrors `setPlaying` but also broadcasts to the
+   * parent overlay. Used by the poster Play button and the ✕ Stop
+   * button. HTML5 video play/pause/ended call `onPlayingChange`
+   * directly (without touching the mount state) so the iframe stays
+   * up while the overlay fades in/out with the user's controls.
+   */
+  const setPlayingAndNotify = (next: boolean) => {
+    setPlaying(next);
+    onPlayingChange?.(next);
+  };
 
   if (video.kind === 'none') {
     return (
@@ -69,7 +96,7 @@ export function VideoHero({
             onClick={(e) => {
               e.stopPropagation();
               setFailed(false);
-              setPlaying(true);
+              setPlayingAndNotify(true);
             }}
           >
             Try again
@@ -84,7 +111,7 @@ export function VideoHero({
       <button
         type="button"
         className={`${styles.root} ${styles.poster}`}
-        onClick={() => setPlaying(true)}
+        onClick={() => setPlayingAndNotify(true)}
         aria-label={`Play video — ${project.title}`}
         data-cursor="view"
         data-cursor-label="Play"
@@ -116,6 +143,9 @@ export function VideoHero({
           autoPlay
           controls
           playsInline
+          onPlay={() => onPlayingChange?.(true)}
+          onPause={() => onPlayingChange?.(false)}
+          onEnded={() => onPlayingChange?.(false)}
           onError={() => setFailed(true)}
         >
           Sorry, your browser does not support embedded video.
@@ -133,7 +163,7 @@ export function VideoHero({
       <button
         type="button"
         className={styles.close}
-        onClick={() => setPlaying(false)}
+        onClick={() => setPlayingAndNotify(false)}
         aria-label="Stop video"
         data-cursor="link"
       >
