@@ -318,12 +318,26 @@ export default config({
         }),
         short: fields.text({ label: 'Short label (NSA)' }),
         initials: fields.text({ label: 'Initial' }),
+        role: fields.text({
+          label: 'Personal title / role',
+          description:
+            'One-liner shown under the name on the home hero (e.g. "Creative Technologist").',
+          validation: { isRequired: true, length: { min: 1 } },
+        }),
         tagline: fields.text({ label: 'Tagline' }),
         manifesto: fields.text({ label: 'Manifesto', multiline: true }),
         location: fields.text({ label: 'Location' }),
         email: fields.text({
           label: 'Contact email',
           validation: { isRequired: true, length: { min: 1 } },
+        }),
+        avatar: fields.object({
+          src: fields.text({
+            label: 'Avatar image URL',
+            description:
+              'Public path, e.g. /assets/avatar.jpg. Leave blank to render an initial-letter fallback in the accent color.',
+          }),
+          alt: fields.text({ label: 'Avatar alt text' }),
         }),
         socials: fields.array(
           fields.object({

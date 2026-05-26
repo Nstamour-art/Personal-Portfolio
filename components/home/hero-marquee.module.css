@@ -1,8 +1,11 @@
 .hero {
   position: relative;
   width: 100%;
-  padding: 100px var(--pad) 80px;
-  min-height: calc(100vh - 80px);
+  /* Top padding tightened because the SiteHeader now lives directly
+   * above this section and already provides breathing room from the
+   * top of the viewport. */
+  padding: 48px var(--pad) 80px;
+  min-height: calc(100vh - 200px);
   display: grid;
   grid-template-rows: 1fr auto;
   gap: 32px;
@@ -22,7 +25,9 @@
   align-items: center;
   gap: 0.4em;
   animation: marquee 38s linear infinite;
-  font-size: clamp(96px, 18vw, 280px);
+  /* ~25% smaller than the original clamp(96, 18vw, 280) so the
+   * marquee reads as a strip rather than a hero. */
+  font-size: clamp(72px, 13.5vw, 210px);
   line-height: 0.86;
   letter-spacing: -0.05em;
   font-weight: 500;
@@ -36,9 +41,10 @@
   }
 }
 
-.track:hover .inner {
-  animation-play-state: paused;
-}
+/* Note: deliberately no `.track:hover .inner { animation-play-state:
+ * paused }` here — the marquee should keep moving even when the
+ * cursor is over it, per the explicit preference of the site owner.
+ */
 
 .sep {
   display: inline-block;

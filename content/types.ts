@@ -86,10 +86,15 @@ export interface SiteConfig {
   name: string;
   short: string;
   initials: string;
+  /** Personal title shown under the name on the home hero. */
+  role: string;
   tagline: string;
   manifesto: string;
   location: string;
   email: string;
+  /** Round avatar shown on the home hero. Leave src empty to render
+   *  the initial-letter fallback styled like the brand mark. */
+  avatar: MediaSlot;
   socials: Social[];
   marquee: string[];
 }

@@ -44,7 +44,7 @@ export function NavRail() {
         })}
       </div>
       <div className={styles.meta} aria-hidden="true">
-        {SITE.short} / Folio 26
+        {SITE.name}
       </div>
     </nav>
   );
