@@ -21,7 +21,7 @@ export function NavRail() {
         href="/"
         className={styles.brandMark}
         data-cursor="link"
-        data-cursor-label="Home"
+        data-cursor-label="Take me home"
         aria-label={`${SITE.name} — home`}
       >
         {SITE.initials}

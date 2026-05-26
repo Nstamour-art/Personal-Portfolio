@@ -64,7 +64,7 @@ export function Tile({ project, index, span, aspectRatio, sizes, className }: Ti
       href={`/work/${project.id}`}
       className={cls}
       data-cursor="view"
-      data-cursor-label="View"
+      data-cursor-label="View case"
       style={aspectRatio ? { aspectRatio } : undefined}
     >
       <div className={styles.media}>

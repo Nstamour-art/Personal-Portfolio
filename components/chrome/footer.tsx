@@ -23,7 +23,7 @@ export function Footer() {
           href={`mailto:${SITE.email}`}
           className={styles.btn}
           data-cursor="link"
-          data-cursor-label="Write"
+          data-cursor-label="Say hi"
         >
           {SITE.email}
           <span className={styles.arr} aria-hidden="true">
