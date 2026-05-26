@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { CustomCursor } from '@/components/chrome/cursor';
 import { Footer } from '@/components/chrome/footer';
 import { NavRail } from '@/components/chrome/nav-rail';
 import { PageTransition } from '@/components/chrome/page-transition';
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="nav-rail-mode caps">
+        <CustomCursor />
         <NavRail />
         <PageTransition>{children}</PageTransition>
         <Footer />

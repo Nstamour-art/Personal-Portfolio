@@ -1,0 +1,133 @@
+.md {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--fg-2);
+  letter-spacing: -0.003em;
+  text-wrap: pretty;
+  max-width: 65ch;
+}
+
+.md > * + * {
+  margin-top: 1.1em;
+}
+
+.p {
+  margin: 0;
+}
+
+.h {
+  color: var(--fg);
+  letter-spacing: -0.018em;
+  font-weight: 500;
+  line-height: 1.15;
+  margin-top: 2em;
+}
+
+.h1 {
+  font-size: clamp(28px, 3.2vw, 40px);
+  letter-spacing: -0.03em;
+}
+.h2 {
+  font-size: clamp(22px, 2.4vw, 30px);
+}
+.h3 {
+  font-size: clamp(18px, 1.9vw, 22px);
+}
+.h4 {
+  font-size: 17px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-family: var(--mono);
+  color: var(--muted);
+  font-weight: 500;
+}
+
+:global(body.caps) .md .h {
+  text-transform: uppercase;
+  letter-spacing: -0.015em;
+}
+:global(body.caps) .md .h1 {
+  letter-spacing: -0.025em;
+}
+
+.md strong {
+  color: var(--fg);
+  font-weight: 500;
+}
+
+.md em {
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.link {
+  color: var(--accent);
+  border-bottom: 1px solid currentColor;
+  transition: opacity var(--t-fast);
+}
+.link:hover {
+  opacity: 0.7;
+}
+
+.codeInline {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: var(--surface);
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--fg);
+  letter-spacing: 0;
+}
+
+.pre {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  border-radius: 4px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin: 1.4em 0;
+  line-height: 1.55;
+}
+
+.pre code {
+  display: block;
+  white-space: pre;
+  color: var(--fg);
+}
+
+.ul,
+.ol {
+  padding-left: 24px;
+  margin: 0;
+}
+.ul li,
+.ol li {
+  margin-top: 0.5em;
+}
+.ul li::marker {
+  color: var(--accent);
+}
+.ol li::marker {
+  color: var(--accent);
+  font-family: var(--mono);
+}
+
+.bq {
+  margin: 1.4em 0;
+  padding: 0 0 0 22px;
+  border-left: 2px solid var(--accent);
+  font-size: 1.05em;
+  color: var(--fg);
+  font-style: normal;
+}
+
+.hr {
+  border: 0;
+  height: 1px;
+  background: var(--line);
+  margin: 2.4em 0;
+}

@@ -1,0 +1,115 @@
+/* Wraps an absolutely-positioned visual inside an aspect-ratio reserved
+ * parent. Used everywhere a project image / video poster appears. */
+
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.ph {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.ph::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.018) 0,
+    rgba(255, 255, 255, 0.018) 1px,
+    transparent 1px,
+    transparent 6px
+  );
+  pointer-events: none;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(237, 229, 216, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(237, 229, 216, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 80%);
+}
+
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(0.5px);
+  opacity: 0.7;
+  mix-blend-mode: screen;
+}
+
+.label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(237, 229, 216, 0.4);
+  background: rgba(14, 17, 23, 0.5);
+  padding: 4px 10px;
+  border: 1px dashed rgba(237, 229, 216, 0.18);
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Per-discipline procedural treatments — SPEC §6.12 */
+
+.motion {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 60%, #322050 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 30%, #1a2540 0%, transparent 60%),
+    linear-gradient(135deg, #14171d 0%, #1a1a28 100%);
+}
+
+.threeD {
+  background:
+    radial-gradient(circle at 30% 30%, #2a1a3a 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, #1a2a3a 0%, transparent 50%),
+    linear-gradient(180deg, #181c24 0%, #0e1117 100%);
+}
+
+.illo {
+  background: linear-gradient(135deg, #2a1f1a 0%, #1a1a2a 60%, #14171d 100%);
+}
+
+.video {
+  background: linear-gradient(180deg, #1a1a1a 0%, #14171d 60%, #0a0a0a 100%);
+}
+
+.ai {
+  background: linear-gradient(135deg, #0e1117 0%, #14202a 60%, #1a2a3a 100%);
+}
+
+.code {
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0,
+      transparent 14px,
+      rgba(179, 136, 255, 0.04) 14px,
+      rgba(179, 136, 255, 0.04) 15px
+    ),
+    linear-gradient(135deg, #14171d 0%, #1c1c2a 100%);
+}
