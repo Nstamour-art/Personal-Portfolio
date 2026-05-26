@@ -1,0 +1,37 @@
+.link {
+  display: inline-block;
+  /* Sized for ~24-character emails — clamp max stays conservative so long
+   * handles never overflow the column (SPEC §6.9). */
+  font-size: clamp(28px, 4vw, 60px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  color: var(--fg);
+  margin-bottom: 24px;
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+
+.link:hover {
+  color: var(--accent);
+}
+
+.link::after {
+  content: '↗';
+  display: inline-block;
+  margin-left: 0.12em;
+  font-size: 0.7em;
+  transition: transform var(--t-fast);
+}
+
+.link:hover::after {
+  transform: translate(8px, -8px);
+}
+
+.sub {
+  font-size: 18px;
+  color: var(--fg-2);
+  max-width: 36ch;
+  margin: 0 0 48px;
+  text-wrap: pretty;
+}

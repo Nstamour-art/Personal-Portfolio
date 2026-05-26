@@ -1,0 +1,41 @@
+.links {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+
+.link {
+  display: grid;
+  grid-template-columns: 110px 1fr 24px;
+  gap: 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: baseline;
+  text-decoration: none;
+  color: inherit;
+  transition: padding-left var(--t-fast), color var(--t-fast);
+}
+
+.link:hover {
+  padding-left: 8px;
+  color: var(--accent);
+}
+
+.k {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.v {
+  font-size: 16px;
+}
+
+.arr {
+  font-size: 14px;
+  color: var(--muted);
+  justify-self: end;
+}

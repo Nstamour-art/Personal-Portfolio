@@ -1,0 +1,28 @@
+.page {
+  padding: 140px var(--pad) 80px;
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+
+.head {
+  margin-bottom: 64px;
+}
+
+.headline {
+  margin-top: 16px;
+  max-width: 16ch;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 80px;
+  margin-top: 40px;
+}
+
+@media (max-width: 880px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}

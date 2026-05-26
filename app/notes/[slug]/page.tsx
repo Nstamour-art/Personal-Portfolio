@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { NoteArticle } from '@/components/notes/note-article';
 import { NOTES } from '@/content/notes';
 import { getNote } from '@/lib/content';
 
@@ -18,7 +19,12 @@ export async function generateMetadata({
   return {
     title: note.title,
     description: note.summary,
-    openGraph: { title: note.title, description: note.summary },
+    openGraph: {
+      title: note.title,
+      description: note.summary,
+      type: 'article',
+      publishedTime: note.date,
+    },
   };
 }
 
@@ -30,17 +36,5 @@ export default async function NotePage({
   const { slug } = await params;
   const note = getNote(slug);
   if (!note) notFound();
-  return (
-    <div className="container" style={{ paddingTop: 120, paddingBottom: 120 }}>
-      <p className="t-eyebrow" style={{ color: 'var(--muted)' }}>
-        {note.kind} · {note.date}
-      </p>
-      <h1 className="t-h1" style={{ marginTop: 24 }}>
-        {note.title}
-      </h1>
-      <p className="t-body" style={{ marginTop: 16, color: 'var(--fg-2)' }}>
-        {note.summary}
-      </p>
-    </div>
-  );
+  return <NoteArticle note={note} />;
 }

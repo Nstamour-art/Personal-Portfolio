@@ -1,0 +1,134 @@
+.page {
+  padding: 140px var(--pad) 80px;
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+
+.head {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 60px;
+  align-items: end;
+  margin-bottom: 64px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 880px) {
+  .head {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+.lede {
+  max-width: 480px;
+  color: var(--fg-2);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 60px 130px 1fr 110px 24px;
+  gap: 24px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: start;
+  transition: padding-left var(--t-fast), color var(--t-fast), background var(--t-fast);
+  text-decoration: none;
+  color: inherit;
+}
+
+.row:hover {
+  padding-left: 12px;
+  background: linear-gradient(90deg, rgba(255, 91, 31, 0.05), transparent 60%);
+}
+.row:hover .title {
+  color: var(--accent);
+}
+
+@media (max-width: 720px) {
+  .row {
+    grid-template-columns: 40px 1fr 24px;
+    gap: 16px;
+  }
+  .meta,
+  .kind {
+    display: none;
+  }
+}
+
+.num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  padding-top: 4px;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.date {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-2);
+}
+
+.pin {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 60ch;
+}
+
+.title {
+  font-size: clamp(20px, 1.8vw, 26px);
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+  font-weight: 500;
+  color: var(--fg);
+  margin: 0;
+  transition: color var(--t-fast);
+}
+
+.summary {
+  font-size: 15px;
+  color: var(--fg-2);
+  margin: 0;
+}
+
+.kind {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-2);
+  text-align: right;
+  padding-top: 4px;
+}
+
+.arrow {
+  font-family: var(--mono);
+  text-align: right;
+  color: inherit;
+  padding-top: 4px;
+}
