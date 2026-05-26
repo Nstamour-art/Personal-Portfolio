@@ -1,14 +1,11 @@
 import type { Metadata, Viewport } from 'next';
-import { IBM_Plex_Mono } from 'next/font/google';
+import { Footer } from '@/components/chrome/footer';
+import { NavRail } from '@/components/chrome/nav-rail';
+import { PageTransition } from '@/components/chrome/page-transition';
 import { SITE } from '@/content/site';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
 import './globals.css';
-
-const plexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  display: 'swap',
-  variable: '--font-mono',
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -53,8 +50,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={plexMono.variable}>
-      <body className="nav-rail-mode caps cursor-on">{children}</body>
+    <html lang="en">
+      <body className="nav-rail-mode caps">
+        <NavRail />
+        <PageTransition>{children}</PageTransition>
+        <Footer />
+      </body>
     </html>
   );
 }
