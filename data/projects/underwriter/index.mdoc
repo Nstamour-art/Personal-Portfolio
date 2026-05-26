@@ -1,0 +1,31 @@
+---
+order: 6
+title: Underwriter
+sub: Wealthsimple-styled prototype
+year: '2025'
+client: Independent
+role: Product design, prototype engineering, AI workflows
+disciplines:
+  - ai
+  - code
+primary: ai
+pitch: An AI underwriting prototype that surfaces the model instead of hiding it.
+brief: An AI-assisted underwriting prototype, styled in a fintech idiom — calm, dense, and explicit about confidence.
+summary: A working AI-underwriting prototype. Document ingestion, structured extraction, and a calm reviewer UI.
+heroAlt: Underwriter — review screen final state
+process:
+  - label: Information architecture
+    note: Card-sort + flows
+  - label: Prompt workbench
+    note: Eval grid
+  - label: UI calibration
+    note: Confidence badging
+tools: Next.js · Claude · TypeScript
+duration: 5 weeks active
+status: Prototype
+---
+Most AI workflow UI hides the model. Underwriter does the opposite — it surfaces every extraction as a citation, every confidence score as a visible attribute, every model call as a step on the timeline.
+
+I styled the prototype in a fintech idiom because that audience is allergic to surprise. The visual restraint forces the AI behaviour to be the interesting thing, not the chrome.
+
+Under the hood it's a small Claude-driven pipeline with hand-tuned prompts, eval grids for each extraction type, and a deterministic post-processor. The reviewer sees a calm three-column layout. The pipeline behind it is paranoid.

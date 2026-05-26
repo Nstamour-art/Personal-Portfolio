@@ -1,0 +1,30 @@
+---
+order: 1
+title: Notes on calm AI interfaces
+date: May 2026
+kind: Essay
+summary: On surfacing the model instead of hiding it — and why fintech idioms get it almost right.
+pinned: true
+coverAlt: Reviewer screen — citation overlay
+---
+Most AI workflow UI tries to hide the model. The output appears, polished and confident, and the user has to take it on faith. That works until it doesn't — and when it breaks, there's nowhere to go.
+
+I think the better posture is *calm exposure*. Show every extraction. Show every confidence score. Show the model call as a step on a timeline. The user doesn't need to understand the internals; they just need to know that there *are* internals, and that they can dig.
+
+## Three patterns I keep reaching for
+
+**Citations everywhere.** Every claim the model makes should be attached to the source it came from — a span in the document, a row in the database, a tweet. The citation is a hyperlink to the evidence. This single move closes most of the trust gap.
+
+**Confidence as a visible attribute.** Not a single global "confidence: 87%" number — that's noise. Instead, badge each extraction with its own score and let the reviewer set a threshold for what they want to manually check.
+
+**Process steps as a timeline.** When the AI does a multi-step thing (read doc, extract entities, classify, summarise), show those steps. Each one is hover-able to reveal its inputs and outputs.
+
+## The fintech idiom
+
+I styled the [Underwriter prototype](/work/underwriter) in a fintech idiom on purpose. That audience is allergic to surprise. The visual restraint forces the AI behaviour to be the interesting thing, not the chrome.
+
+There's a deeper reason: fintech UIs have spent decades earning trust by being explicit. *Pending. Cleared. Settled.* Every state has a name and a colour and a place in the timeline. Calm AI interfaces want to learn that vocabulary.
+
+---
+
+The rule I'm landing on: **never make the model speak in the first person.** Every "I" is a chance for the AI to overclaim. Better to caption: *Extraction · 94% · Source: pp. 12–14.* Same information, none of the personality.

@@ -1,0 +1,74 @@
+{
+  "home": {
+    "loopFeaturedEyebrow": "Featured project",
+    "featuredEyebrow": "Selected work",
+    "featuredTitle": "Recent projects",
+    "featuredCtaAll": "All work",
+    "notesEyebrow": "Notes & process",
+    "notesTitle": "Short writing on tools, rigs and how things get made.",
+    "typeHeadline": "Motion artist building AI workflows for the things that move.",
+    "typeRoleStrip": ["Motion", "3D / CG", "Illustration", "Video", "AI / Workflows", "Code"],
+    "typeMetaGrid": [
+      { "k": "Currently", "v": "Independent — building tools and reels." },
+      { "k": "Based", "v": "Montréal — remote" },
+      { "k": "Selected clients", "v": "Vubiquity, Food Network, Xogot, Architect Films." },
+      { "k": "Status", "v": "Currently in a full-time role." }
+    ],
+    "reelEyebrow": "Showreel — 2026 selection",
+    "reelMeta": "02:14 · 4K · 24fps",
+    "reelHeadline": "Frames, systems, shipped.",
+    "reelBlurb": "A motion artist and AI workflow engineer. Selected work across broadcast, independent film and product. Currently building tools that help frames ship faster.",
+    "reelNowPlaying": "Now playing"
+  },
+  "work": {
+    "eyebrowPrefix": "Work",
+    "headlineTemplate": "A working catalog of {projects} project{projectsS} across {disciplines} discipline{disciplinesS}.",
+    "lede": "Each piece sits in its own case study with a brief, the final result, process gallery, and a written note on how it was made. Use the filters to narrow by discipline."
+  },
+  "caseStudy": {
+    "briefLabel": "The brief",
+    "snapshotLabel": "Snapshot",
+    "processEyebrow": "Process",
+    "processHeadline": "How it got made.",
+    "processBlurb": "Selected stills from the working files — block-outs, style frames and tests that informed the final piece.",
+    "writeupLabel": "Notes on the build",
+    "backLink": "Back to index",
+    "prevLabel": "← Previous case",
+    "nextLabel": "Next case →"
+  },
+  "about": {
+    "eyebrow": "Studio of one — Montréal · remote",
+    "headline": "A motion artist who fell in love with systems.",
+    "practiceLabel": "Practice",
+    "practiceLines": ["EST. 2021", "Independent practice", "Selective collaborations"],
+    "aboutLabel": "About",
+    "aboutParagraphs": [
+      "I design in motion and build with systems. Most of the last five years have been spent on broadcast graphics, 3D animation and identity work — the kind of projects where the rig matters as much as the frame.",
+      "In **2024** I started spending half my time on AI workflows. Same instinct, different surface: figure out what the system wants to do, build the rig that lets it do it, then make it *look* like it was always supposed to feel that way. The output is sometimes a render, sometimes a prompt graph, sometimes a small product.",
+      "My favourite work sits at the join. A title sequence that's also a templated rig. A worldbuilding project that's also a design system. An underwriting prototype that's also a piece of motion. If you have a brief that lives in two disciplines, I'd like to read it."
+    ],
+    "experienceEyebrow": "Experience",
+    "experienceHeadline": "Selected projects, in order of recency."
+  },
+  "contact": {
+    "eyebrow": "Get in touch — usually replies same week",
+    "headline": "New work, collaboration, or just to say hello.",
+    "subtitle": "For project enquiries, please include a one-paragraph brief, your rough timeline, and any reference material. I read everything — usually reply within five working days.",
+    "workingWithLabel": "Working with",
+    "workingWith": [
+      "Brand identity teams",
+      "Independent studios",
+      "Broadcast networks",
+      "Product teams adopting AI",
+      "Director-led films"
+    ]
+  },
+  "footer": {
+    "ctaHeadline": "Have a brief that lives in two disciplines?",
+    "siteHead": "Site",
+    "elsewhereHead": "Elsewhere",
+    "colophonHead": "Colophon",
+    "colophon": ["Helvetica Neue", "IBM Plex Mono", "Hand-built, no CMS", "v.26.05"],
+    "rightsTemplate": "© {name} — Folio '26"
+  }
+}

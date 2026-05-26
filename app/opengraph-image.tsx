@@ -1,7 +1,10 @@
 import { ImageResponse } from 'next/og';
 import { SITE } from '@/content/site';
 
-export const runtime = 'edge';
+/* nodejs runtime: SITE is loaded from data/site.json via Node fs at module
+ * scope, which the edge runtime can't do. The OG route still ships small
+ * (no React tree to hydrate) and only renders on demand. */
+export const runtime = 'nodejs';
 export const alt = `${SITE.name} — ${SITE.tagline}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
