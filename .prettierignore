@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+build
+dist
+prototype
+public/fonts
+*.lock
+pnpm-lock.yaml
+package-lock.json
