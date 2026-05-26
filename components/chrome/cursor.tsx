@@ -1,28 +1,35 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { useCoarsePointer, useReducedMotion } from '@/lib/hooks/useReducedMotion';
 import styles from './cursor.module.css';
 
 /**
- * Custom blend-mode cursor — SPEC §6.2.
+ * Custom HUD-chip cursor — SPEC §6.2 + cursor redesign 2026-05-26.
  *
- * Two fixed elements that follow the pointer with RAF lerps. Reads
- * `data-cursor` and `data-cursor-label` from the closest ancestor of the
- * pointer target to switch state.
+ * One fixed chip follows the pointer with a RAF lerp. Reads `data-cursor`
+ * and `data-cursor-label` from the closest ancestor of the pointer target
+ * to switch state. The leading pip scales by state; the label slides in
+ * when there is something to interact with.
  *
- * Hidden entirely on coarse pointers and when prefers-reduced-motion: reduce.
- * Mounted high in layout.tsx, alongside `body.cursor-on` which hides the
- * native cursor on interactive surfaces.
+ * Hidden entirely on coarse pointers, when prefers-reduced-motion: reduce,
+ * and on the /keystatic admin shell (Task 3 wires that exclusion).
  */
 export function CustomCursor() {
-  const dotRef = useRef<HTMLDivElement | null>(null);
-  const ringRef = useRef<HTMLDivElement | null>(null);
-  const labelRef = useRef<HTMLDivElement | null>(null);
+  const chipRef = useRef<HTMLDivElement | null>(null);
+  const pipRef = useRef<HTMLSpanElement | null>(null);
+  const labelRef = useRef<HTMLSpanElement | null>(null);
   const stateRef = useRef<string>('default');
 
   const reduced = useReducedMotion();
   const coarse = useCoarsePointer();
+  const pathname = usePathname();
+
+  // Pathname-driven glyph is populated in Task 3. For now, empty string
+  // means "no glyph", and the pip stays a plain dot.
+  const sectionGlyph = '';
+  void pathname; // silence unused-var until Task 3 wires it
 
   useEffect(() => {
     document.body.classList.add('cursor-on');
@@ -36,10 +43,8 @@ export function CustomCursor() {
 
     let mx = window.innerWidth / 2;
     let my = window.innerHeight / 2;
-    let rx = mx;
-    let ry = my;
-    let dx = mx;
-    let dy = my;
+    let cx = mx;
+    let cy = my;
     let raf = 0;
 
     const onMove = (e: MouseEvent) => {
@@ -51,36 +56,38 @@ export function CustomCursor() {
       const label = el?.dataset['cursorLabel'] ?? '';
       if (stateRef.current !== next) {
         stateRef.current = next;
-        if (ringRef.current) ringRef.current.dataset['state'] = next;
+        if (chipRef.current) chipRef.current.dataset['state'] = next;
       }
       if (labelRef.current) {
-        labelRef.current.textContent = label;
-        labelRef.current.dataset['show'] = label ? '1' : '0';
+        // Fallback labels: link → '→', view → 'View'. Otherwise use the
+        // data attribute. Default state has no label regardless.
+        const resolved =
+          next === 'default'
+            ? ''
+            : label || (next === 'view' ? 'View' : '→');
+        labelRef.current.textContent = resolved;
       }
     };
 
     const hide = () => {
-      if (dotRef.current) dotRef.current.style.opacity = '0';
-      if (ringRef.current) ringRef.current.style.opacity = '0';
+      if (chipRef.current) chipRef.current.style.opacity = '0';
     };
     const show = () => {
-      if (dotRef.current) dotRef.current.style.opacity = '1';
-      if (ringRef.current) ringRef.current.style.opacity = '1';
+      // Opacity is now controlled per-state in CSS — restore inline
+      // opacity to empty so the CSS rule takes over.
+      if (chipRef.current) chipRef.current.style.opacity = '';
     };
 
     const loop = () => {
-      rx += (mx - rx) * 0.18;
-      ry += (my - ry) * 0.18;
-      dx += (mx - dx) * 0.55;
-      dy += (my - dy) * 0.55;
-      if (ringRef.current) {
-        ringRef.current.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
-      }
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-      }
-      if (labelRef.current) {
-        labelRef.current.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`;
+      cx += (mx - cx) * 0.18;
+      cy += (my - cy) * 0.18;
+      if (chipRef.current) {
+        // Offset the chip 12px right + 14px down of the actual pointer
+        // so the label never sits on the target — except in default
+        // state, where we keep the pip at the tip.
+        const offsetX = stateRef.current === 'default' ? 0 : 12;
+        const offsetY = stateRef.current === 'default' ? 0 : 14;
+        chipRef.current.style.transform = `translate3d(${cx + offsetX}px, ${cy + offsetY}px, 0)`;
       }
       raf = requestAnimationFrame(loop);
     };
@@ -101,10 +108,20 @@ export function CustomCursor() {
   if (reduced || coarse) return null;
 
   return (
-    <>
-      <div ref={ringRef} className={styles.ring} data-state="default" aria-hidden="true" />
-      <div ref={dotRef} className={styles.dot} aria-hidden="true" />
-      <div ref={labelRef} className={styles.label} data-show="0" aria-hidden="true" />
-    </>
+    <div
+      ref={chipRef}
+      className={styles.chip}
+      data-state="default"
+      aria-hidden="true"
+    >
+      <span
+        ref={pipRef}
+        className={styles.pip}
+        data-glyph={sectionGlyph}
+      >
+        {sectionGlyph}
+      </span>
+      <span ref={labelRef} className={styles.label} />
+    </div>
   );
 }

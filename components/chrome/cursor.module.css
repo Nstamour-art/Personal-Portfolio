@@ -1,69 +1,150 @@
-.dot,
-.ring {
+/* Custom cursor — HUD chip. SPEC §6.2 + cursor redesign 2026-05-26. */
+
+.chip {
   position: fixed;
   top: 0;
   left: 0;
   pointer-events: none;
   z-index: 2147483647;
-  mix-blend-mode: difference;
-  will-change: transform;
-}
-
-.dot {
-  width: 6px;
-  height: 6px;
-  margin: -3px 0 0 -3px;
-  background: var(--fg);
-  border-radius: 50%;
-  transition: opacity 150ms;
-}
-
-.ring {
-  width: 36px;
-  height: 36px;
-  margin: -18px 0 0 -18px;
-  border: 1px solid var(--fg);
-  border-radius: 50%;
-  transition:
-    width 260ms cubic-bezier(0.22, 0.61, 0.36, 1),
-    height 260ms cubic-bezier(0.22, 0.61, 0.36, 1),
-    margin 260ms cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 200ms,
-    background-color 200ms;
-}
-
-.ring[data-state='link'] {
-  width: 56px;
-  height: 56px;
-  margin: -28px 0 0 -28px;
-  background: rgba(237, 229, 216, 0.08);
-}
-
-.ring[data-state='view'] {
-  width: 92px;
-  height: 92px;
-  margin: -46px 0 0 -46px;
-  background: var(--accent);
-  border-color: var(--accent);
-  mix-blend-mode: normal;
-}
-
-.label {
-  position: fixed;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  z-index: 2147483647;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px;
+  background: rgba(14, 17, 23, 0.7);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid rgba(237, 229, 216, 0.15);
+  color: var(--fg);
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--accent-ink);
+  border-radius: 2px;
+  white-space: nowrap;
   opacity: 0;
-  transition: opacity 200ms;
+  transition:
+    opacity var(--t-fast),
+    transform 120ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 200ms,
+    padding 180ms cubic-bezier(0.22, 0.61, 0.36, 1);
   will-change: transform, opacity;
 }
 
-.label[data-show='1'] {
+/* Backdrop-filter fallback: near-opaque dark pill on browsers without
+ * the filter (Firefox without flag, older browsers). */
+@supports not (backdrop-filter: blur(1px)) {
+  .chip {
+    background: rgba(14, 17, 23, 0.92);
+  }
+}
+
+.pip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3px;
+  height: 3px;
+  background: var(--accent);
+  color: var(--accent);
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: 11px;
+  line-height: 1;
+  font-family: var(--mono);
+  transition:
+    width 180ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    height 180ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    background-color 180ms,
+    box-shadow 200ms;
+  will-change: width, height;
+}
+
+/* When a glyph is set, the pip becomes a glyph slot — slightly bigger so
+ * the character isn't clipped, transparent background. */
+.pip[data-glyph]:not([data-glyph='']) {
+  background: transparent;
+  border-radius: 0;
+  width: 12px;
+  height: 12px;
+}
+
+.label {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-width 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 180ms;
+}
+
+/* === STATES (driven by data-state on .chip) === */
+
+/* default: chip body hidden; only the small pip is visible.
+ * We achieve this by collapsing padding + hiding bg/border/label
+ * so the pip floats alone at the pointer tip. */
+.chip[data-state='default'] {
+  padding: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-color: transparent;
+  opacity: 1; /* keep wrapper visible so .pip shows; the chip "body" is invisible via the props above */
+}
+
+.chip[data-state='default'] .pip {
+  width: 3px;
+  height: 3px;
+}
+
+.chip[data-state='default'] .label {
+  max-width: 0;
+  opacity: 0;
+}
+
+/* link: chip body visible, pip 6px, label slides in */
+.chip[data-state='link'] {
   opacity: 1;
+}
+
+.chip[data-state='link'] .pip {
+  width: 6px;
+  height: 6px;
+}
+
+.chip[data-state='link'] .label {
+  max-width: 12ch;
+  opacity: 1;
+}
+
+/* view: bigger pip, subtle accent glow, label visible */
+.chip[data-state='view'] {
+  opacity: 1;
+  box-shadow: 0 6px 20px rgba(255, 91, 31, 0.25);
+}
+
+.chip[data-state='view'] .pip {
+  width: 10px;
+  height: 10px;
+}
+
+.chip[data-state='view'] .label {
+  max-width: 14ch;
+  opacity: 1;
+}
+
+/* active: triggered on mousedown over link/view. Subtle pulse. */
+.chip[data-active='1'] {
+  transform-origin: top left;
+}
+
+.chip[data-active='1'][data-state='link'],
+.chip[data-active='1'][data-state='view'] {
+  box-shadow: 0 6px 22px rgba(255, 91, 31, 0.35);
+}
+
+.chip[data-active='1'][data-state='link'] .pip,
+.chip[data-active='1'][data-state='view'] .pip {
+  box-shadow: 0 0 0 3px rgba(255, 91, 31, 0.3);
 }
