@@ -191,10 +191,12 @@ export default config({
           multiline: true,
           validation: { isRequired: true, length: { min: 1 } },
         }),
-        heroSrc: fields.text({
-          label: 'Hero image URL',
+        heroSrc: fields.image({
+          label: 'Hero image',
           description:
-            'Public path, e.g. /assets/projects/vubiquity/hero.jpg. Leave blank to use a procedural placeholder.',
+            'Drag/drop or pick a file. Stored under /public/assets/projects/<slug>/ in the repo and committed via Keystatic Cloud. Leave empty to use the procedural placeholder.',
+          directory: 'public/assets/projects',
+          publicPath: '/assets/projects/',
         }),
         heroAlt: fields.text({
           label: 'Hero alt text',
@@ -204,9 +206,12 @@ export default config({
           description:
             'YouTube or Vimeo URL. When set, the hero becomes click-to-play with the image above as the poster.',
         }),
-        thumbSrc: fields.text({
-          label: 'Thumb image URL',
-          description: 'Optional override; otherwise falls back to hero.',
+        thumbSrc: fields.image({
+          label: 'Thumb image',
+          description:
+            'Optional override; otherwise falls back to the hero image.',
+          directory: 'public/assets/projects',
+          publicPath: '/assets/projects/',
         }),
         thumbAlt: fields.text({ label: 'Thumb alt text' }),
         process: fields.array(
@@ -219,9 +224,11 @@ export default config({
               label: 'Step note',
               validation: { isRequired: true, length: { min: 1 } },
             }),
-            mediaSrc: fields.text({
-              label: 'Image URL',
-              description: 'Public path, optional.',
+            mediaSrc: fields.image({
+              label: 'Step image',
+              description: 'Optional.',
+              directory: 'public/assets/projects',
+              publicPath: '/assets/projects/',
             }),
             mediaAlt: fields.text({ label: 'Alt text' }),
           }),
@@ -294,9 +301,12 @@ export default config({
           description: 'Surfaces in the home-page notes strip.',
           defaultValue: false,
         }),
-        coverSrc: fields.text({
-          label: 'Cover image URL',
-          description: 'Optional. Leave blank for the procedural cover.',
+        coverSrc: fields.image({
+          label: 'Cover image',
+          description:
+            'Drag/drop or pick a file. Stored under /public/assets/notes/<slug>/ in the repo. Leave empty for the procedural cover.',
+          directory: 'public/assets/notes',
+          publicPath: '/assets/notes/',
         }),
         coverAlt: fields.text({ label: 'Cover alt text' }),
         body: fields.markdoc({
@@ -331,14 +341,19 @@ export default config({
           label: 'Contact email',
           validation: { isRequired: true, length: { min: 1 } },
         }),
-        avatar: fields.object({
-          src: fields.text({
-            label: 'Avatar image URL',
-            description:
-              'Public path, e.g. /assets/avatar.jpg. Leave blank to render an initial-letter fallback in the accent color.',
-          }),
-          alt: fields.text({ label: 'Avatar alt text' }),
-        }),
+        avatar: fields.object(
+          {
+            src: fields.image({
+              label: 'Avatar image',
+              description:
+                'Drag/drop or pick a file. Stored at /public/assets/site/. Leave empty to render the accent-coloured initial-letter fallback.',
+              directory: 'public/assets/site',
+              publicPath: '/assets/site/',
+            }),
+            alt: fields.text({ label: 'Avatar alt text' }),
+          },
+          { label: 'Avatar' },
+        ),
         socials: fields.array(
           fields.object({
             label: fields.text({

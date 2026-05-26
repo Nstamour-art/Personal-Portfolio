@@ -8,7 +8,10 @@ interface NoteFront {
   kind: string;
   summary: string;
   pinned?: boolean;
-  coverSrc?: string;
+  /* `coverSrc` is `null` when the Keystatic image field hasn't been
+   * filled. The mapper coalesces it to '' so the cover renderer
+   * falls back to the procedural placeholder. */
+  coverSrc?: string | null;
   coverAlt?: string;
 }
 

@@ -6,10 +6,15 @@ import type {
   SpanKey,
 } from './types';
 
+/* Note: image-typed fields are `string | null | undefined` because
+ * Keystatic's fields.image stores `null` when the editor hasn't
+ * uploaded anything. The mappers below coalesce all three to `''`,
+ * which is the falsy value the rendering primitives check to decide
+ * between a real image and a procedural placeholder. */
 interface ProcessFront {
   label: string;
   note: string;
-  mediaSrc?: string;
+  mediaSrc?: string | null;
   mediaAlt?: string;
 }
 
@@ -26,10 +31,10 @@ interface ProjectFront {
   pitch?: string;
   brief: string;
   summary: string;
-  heroSrc?: string;
+  heroSrc?: string | null;
   heroAlt?: string;
   heroVideo?: string;
-  thumbSrc?: string;
+  thumbSrc?: string | null;
   thumbAlt?: string;
   process: ProcessFront[];
   tools?: string;
