@@ -4,15 +4,28 @@ import { collection, config, fields, singleton } from '@keystatic/core';
  * Keystatic schema — mirrors content/types.ts (SPEC §5).
  *
  * Storage strategy:
- *  - In local dev (when VERCEL is unset), storage is `local` — Keystatic
- *    writes directly to the working directory. Run `pnpm content` after
- *    an edit to refresh data/_generated/*.json, or restart `pnpm dev`.
- *  - On any Vercel deploy, storage is `cloud` — auth and GitHub commits
- *    are handled by Keystatic Cloud (keystatic.cloud), which manages its
- *    own GitHub App against the connected repo. Zero env vars in the
- *    app itself; project identity lives in the `cloud.project` field
- *    below. Editor management (who can sign in) is done from the
+ *  - In dev (`pnpm dev`, NODE_ENV=development), storage is `local` —
+ *    Keystatic writes directly to the working directory. Run
+ *    `pnpm content` after an edit to refresh data/_generated/*.json,
+ *    or restart `pnpm dev`.
+ *  - In production builds (`pnpm build` and on Vercel,
+ *    NODE_ENV=production), storage is `cloud` — auth and GitHub commits
+ *    are handled by Keystatic Cloud (keystatic.cloud), which manages
+ *    its own GitHub App against the connected repo. Zero env vars in
+ *    the app itself; project identity lives in the `cloud.project`
+ *    field below. Editor management (who can sign in) is done from the
  *    Keystatic Cloud dashboard.
+ *
+ *  WHY NODE_ENV AND NOT VERCEL: this config is imported in both the
+ *  server-side API route handler (app/api/keystatic/[...params]/route.ts)
+ *  AND the client-side admin UI (app/keystatic/[[...params]]/page.tsx,
+ *  which is `'use client'`). Next.js inlines `process.env.NODE_ENV` into
+ *  the client bundle, so both contexts agree on the storage mode. Other
+ *  env vars (like `VERCEL`) are NOT exposed to client bundles unless
+ *  prefixed with `NEXT_PUBLIC_`, which would create a split-brain config:
+ *  the server in `cloud` mode while the client thinks it's `local`,
+ *  causing the admin UI to call `/api/keystatic/tree` (a local/github
+ *  path) which the cloud-mode server handler doesn't register → 404.
  *
  * Disciplines, procedural keys, and span keys are typed enums and live in
  * Keystatic as `select`/`multiselect` so the editor can't drift from the
@@ -51,7 +64,7 @@ const SPAN_OPTIONS = [
 ] as const;
 
 const storage =
-  process.env['VERCEL'] === '1'
+  process.env['NODE_ENV'] === 'production'
     ? ({ kind: 'cloud' } as const)
     : ({ kind: 'local' } as const);
 
