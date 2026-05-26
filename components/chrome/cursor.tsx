@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { useCoarsePointer, useReducedMotion } from '@/lib/hooks/useReducedMotion';
 import styles from './cursor.module.css';
 
@@ -26,13 +27,24 @@ export function CustomCursor() {
 
   const reduced = useReducedMotion();
   const coarse = useCoarsePointer();
+  const pathname = usePathname();
+
+  /* Pathname-driven section glyph for the pip. Empty string keeps the
+   * pip as a plain dot. The glyph only renders when state is link/view/
+   * active (handled by CSS — default state hides the chip body and the
+   * pip falls back to a small solid dot via state-scoped sizing). */
+  const sectionGlyph = glyphForPath(pathname);
+
+  /* Admin shell keeps native pointer — no custom chip on /keystatic/*. */
+  const onAdmin = pathname?.startsWith('/keystatic') ?? false;
 
   useEffect(() => {
+    if (reduced || coarse || onAdmin) return;
     document.body.classList.add('cursor-on');
     return () => {
       document.body.classList.remove('cursor-on');
     };
-  }, []);
+  }, [reduced, coarse, onAdmin]);
 
   useEffect(() => {
     if (reduced || coarse) return;
@@ -101,7 +113,7 @@ export function CustomCursor() {
     };
   }, [reduced, coarse]);
 
-  if (reduced || coarse) return null;
+  if (reduced || coarse || onAdmin) return null;
 
   return (
     <div
@@ -111,8 +123,19 @@ export function CustomCursor() {
       aria-hidden="true"
       style={{ transform: 'translate3d(-100px, -100px, 0)' }}
     >
-      <span className={styles.pip} />
+      <span className={styles.pip} data-glyph={sectionGlyph}>
+        {sectionGlyph}
+      </span>
       <span ref={labelRef} className={styles.label} />
     </div>
   );
+}
+
+function glyphForPath(pathname: string | null): string {
+  if (!pathname) return '';
+  if (pathname.startsWith('/work')) return '◆';
+  if (pathname.startsWith('/notes')) return '◇';
+  if (pathname === '/contact' || pathname.startsWith('/contact/')) return '✉';
+  if (pathname.startsWith('/studio')) return '●';
+  return '';
 }
