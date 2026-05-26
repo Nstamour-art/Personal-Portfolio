@@ -1,12 +1,13 @@
+import { FeaturedStrip } from '@/components/home/featured-strip';
+import { HeroMarquee } from '@/components/home/hero-marquee';
+import { NotesStrip } from '@/components/home/notes-strip';
+
 export default function HomePage() {
   return (
-    <main className="container" style={{ paddingTop: 120, paddingBottom: 120 }}>
-      <p className="t-eyebrow" style={{ color: 'var(--muted)' }}>
-        Folio &apos;26 — scaffold OK
-      </p>
-      <h1 className="t-display" style={{ marginTop: 24 }}>
-        Coming back online.
-      </h1>
-    </main>
+    <>
+      <HeroMarquee />
+      <FeaturedStrip />
+      <NotesStrip />
+    </>
   );
 }

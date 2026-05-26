@@ -1,0 +1,41 @@
+.strip {
+  padding: 80px var(--pad) 40px;
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 32px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.headTitle {
+  margin-top: 8px;
+  max-width: 18ch;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
+
+@media (max-width: 880px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.secLabel {
+  font-family: var(--mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}

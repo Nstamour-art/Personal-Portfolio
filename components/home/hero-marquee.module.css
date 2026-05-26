@@ -1,0 +1,150 @@
+.hero {
+  position: relative;
+  width: 100%;
+  padding: 100px var(--pad) 80px;
+  min-height: calc(100vh - 80px);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 32px;
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  margin: 0 calc(-1 * var(--pad));
+  user-select: none;
+}
+
+.inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  animation: marquee 38s linear infinite;
+  font-size: clamp(96px, 18vw, 280px);
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+  font-weight: 500;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inner {
+    animation: none;
+    transform: translateX(-25%);
+  }
+}
+
+.track:hover .inner {
+  animation-play-state: paused;
+}
+
+.sep {
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  background: var(--accent);
+  border-radius: 50%;
+  margin: 0 0.2em;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.word {
+  display: inline-block;
+}
+
+.ghost {
+  color: transparent;
+  -webkit-text-stroke: 4px var(--line-2);
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.below {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 56px;
+  align-items: center;
+}
+
+@media (max-width: 880px) {
+  .below {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.headline {
+  max-width: 20ch;
+  margin: 16px 0 20px;
+}
+
+.brief {
+  max-width: 44ch;
+  margin-bottom: 28px;
+  color: var(--fg-2);
+}
+
+.peek {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  width: 100%;
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.peekLabel {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.peekSub {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--fg-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.peekTitle {
+  font-size: clamp(18px, 1.8vw, 26px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+  color: var(--fg);
+  margin-top: 4px;
+}
+
+.peekYear {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--fg-2);
+}
+
+.secLabel {
+  font-family: var(--mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
