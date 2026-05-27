@@ -7,7 +7,7 @@
   "manifesto": "Designing in motion. Building with systems. Telling stories with frames, code, and process.",
   "location": "Montréal — remote",
   "email": "hello@nstamour.xyz",
-  "avatar": { "src": "", "alt": "Nicolas St-Amour" },
+  "avatar": { "src": "/assets/site/avatar.png", "alt": "Nicolas St-Amour" },
   "socials": [
     { "label": "Instagram", "handle": "@nstamour.work", "href": "#" },
     { "label": "Vimeo", "handle": "vimeo.com/nstamour", "href": "#" },
