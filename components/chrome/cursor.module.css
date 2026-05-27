@@ -37,10 +37,14 @@
   overflow: visible;
 }
 
-.leashLine {
+.leashPath {
   stroke: var(--accent);
-  stroke-width: 1;
+  stroke-width: 1.25;
   fill: none;
+  /* Rounded line joins + caps keep the polyline reading as a
+   * smooth rope rather than as a chain of angled segments. */
+  stroke-linejoin: round;
+  stroke-linecap: round;
   opacity: 0;
   /* Slightly softer easing than the label so the leash hangs back
    * during the first ~80ms of a hover — feels like the line is
@@ -48,13 +52,13 @@
   transition: opacity 240ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-body[data-cursor-state='link'] .leashLine,
-body[data-cursor-state='view'] .leashLine {
+body[data-cursor-state='link'] .leashPath,
+body[data-cursor-state='view'] .leashPath {
   opacity: 0.55;
 }
 
-body[data-cursor-state='view'] .leashLine {
-  stroke-width: 1.25;
+body[data-cursor-state='view'] .leashPath {
+  stroke-width: 1.5;
 }
 
 /* ─── CURSOR (triangle / I-beam) ──────────────────────────────────── */

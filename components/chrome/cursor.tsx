@@ -50,7 +50,7 @@ export function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement | null>(null);
   const labelRef = useRef<HTMLDivElement | null>(null);
   const labelTextRef = useRef<HTMLSpanElement | null>(null);
-  const leashLineRef = useRef<SVGLineElement | null>(null);
+  const leashPathRef = useRef<SVGPathElement | null>(null);
   const stateRef = useRef<string>('default');
 
   const reduced = useReducedMotion();
@@ -116,6 +116,50 @@ export function CustomCursor() {
      * before snapping into place. */
     const K = 0.09;
     const D = 0.82;
+
+    /* Rope simulation — the leash isn't a straight line, it's a
+     * chain of N nodes joined by distance constraints. Verlet
+     * integration on the interior nodes gives them inertia + a
+     * downward gravity bias; the endpoints get pinned to the
+     * cursor and the label each frame.
+     *
+     *  ROPE_NODES         — point count. 14 is dense enough that
+     *                       the rendered polyline reads as a curve.
+     *  ROPE_GRAVITY       — downward acceleration per frame. Higher
+     *                       = the rope sags more.
+     *  ROPE_FRICTION      — fraction of velocity bled off per
+     *                       frame. Lower = more swing/wobble.
+     *  ROPE_ITERS         — constraint relaxation passes. Higher =
+     *                       stiffer rope (no stretch); lower = the
+     *                       rope can elongate temporarily on sharp
+     *                       cursor jerks, which actually looks
+     *                       great.
+     *  ROPE_SLACK         — extra length factor vs. straight-line
+     *                       cursor-to-label distance. 1.12 = 12%
+     *                       extra rope so it visibly bows even at
+     *                       rest. */
+    const ROPE_NODES = 14;
+    const ROPE_GRAVITY = 0.35;
+    const ROPE_FRICTION = 0.04;
+    const ROPE_ITERS = 6;
+    const ROPE_SLACK = 1.12;
+
+    interface RopeNode {
+      x: number;
+      y: number;
+      px: number;
+      py: number;
+    }
+    /* Seed nodes evenly along the cursor → label vector so the
+     * very first frame already has a sensible shape (no points
+     * stacked at origin and then snapping out). */
+    const rope: RopeNode[] = [];
+    for (let i = 0; i < ROPE_NODES; i++) {
+      const t = i / (ROPE_NODES - 1);
+      const x = mx + t * LABEL_DX;
+      const y = my + t * LABEL_DY;
+      rope.push({ x, y, px: x, py: y });
+    }
 
     /* Pointer source of truth + state derivation. Text-field
      * detection runs regardless of data-cursor so inputs always
@@ -204,14 +248,80 @@ export function CustomCursor() {
       if (label) {
         label.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
       }
-      const leash = leashLineRef.current;
+
+      /* ─── ROPE STEP ───────────────────────────────────────────
+       * 1. Verlet on interior nodes — implicit velocity = current −
+       *    previous; we bleed off friction and add gravity. */
+      for (let i = 1; i < ROPE_NODES - 1; i++) {
+        const p = rope[i]!;
+        const vx = (p.x - p.px) * (1 - ROPE_FRICTION);
+        const vy = (p.y - p.py) * (1 - ROPE_FRICTION);
+        p.px = p.x;
+        p.py = p.y;
+        p.x += vx;
+        p.y += vy + ROPE_GRAVITY;
+      }
+
+      /* 2. Pin endpoints to the cursor and to the label's top-left
+       *    (which is the label element's own translate origin). */
+      rope[0]!.x = cx;
+      rope[0]!.y = cy;
+      rope[ROPE_NODES - 1]!.x = lx;
+      rope[ROPE_NODES - 1]!.y = ly;
+
+      /* 3. Segment length adapts to the live cursor↔label
+       *    distance × slack, so the rope always has visible bow.
+       *    Floor at 6px so the rope doesn't collapse when the
+       *    label catches up exactly. */
+      const ropeDx = lx - cx;
+      const ropeDy = ly - cy;
+      const directDist = Math.sqrt(ropeDx * ropeDx + ropeDy * ropeDy);
+      const segLen = Math.max(6, (directDist * ROPE_SLACK) / (ROPE_NODES - 1));
+
+      /* 4. Distance constraint relaxation (Jakobsen). Each pass,
+       *    each segment is pulled / pushed so its length matches
+       *    segLen. Endpoints are fixed, so when only one side of a
+       *    segment is movable, that side eats the entire correction
+       *    (factor of 2). */
+      for (let iter = 0; iter < ROPE_ITERS; iter++) {
+        for (let i = 0; i < ROPE_NODES - 1; i++) {
+          const a = rope[i]!;
+          const b = rope[i + 1]!;
+          const sdx = b.x - a.x;
+          const sdy = b.y - a.y;
+          const sd = Math.sqrt(sdx * sdx + sdy * sdy) || 1e-4;
+          const diff = (sd - segLen) / sd;
+          const ox = sdx * 0.5 * diff;
+          const oy = sdy * 0.5 * diff;
+
+          const aFixed = i === 0;
+          const bFixed = i + 1 === ROPE_NODES - 1;
+
+          if (!aFixed && !bFixed) {
+            a.x += ox;
+            a.y += oy;
+            b.x -= ox;
+            b.y -= oy;
+          } else if (aFixed && !bFixed) {
+            b.x -= ox * 2;
+            b.y -= oy * 2;
+          } else if (!aFixed && bFixed) {
+            a.x += ox * 2;
+            a.y += oy * 2;
+          }
+        }
+      }
+
+      /* 5. Render — polyline through every node. With 14 nodes
+       *    the segments are short enough that the eye reads the
+       *    polyline as a curve; rounded line joins help. */
+      const leash = leashPathRef.current;
       if (leash) {
-        /* Endpoints in viewport coords: line from cursor centre to
-         * pill top-left (which is the label element's own origin). */
-        leash.setAttribute('x1', String(cx));
-        leash.setAttribute('y1', String(cy));
-        leash.setAttribute('x2', String(lx));
-        leash.setAttribute('y2', String(ly));
+        let d = `M${rope[0]!.x.toFixed(1)} ${rope[0]!.y.toFixed(1)}`;
+        for (let i = 1; i < ROPE_NODES; i++) {
+          d += ` L${rope[i]!.x.toFixed(1)} ${rope[i]!.y.toFixed(1)}`;
+        }
+        leash.setAttribute('d', d);
       }
 
       raf = requestAnimationFrame(loop);
@@ -238,22 +348,17 @@ export function CustomCursor() {
 
   return (
     <>
-      {/* Leash overlay — full-viewport SVG with a single line.
+      {/* Leash overlay — full-viewport SVG with a rope <path>.
        *   pointer-events: none lets all events fall through.
-       *   z-index just under .cursor / .label so it paints behind. */}
+       *   z-index sits just under .cursor / .label so it paints
+       *   behind both. The `d` attribute is rewritten every frame
+       *   by the RAF loop with a polyline through the rope nodes. */}
       <svg
         className={styles.leashSvg}
         aria-hidden="true"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <line
-          ref={leashLineRef}
-          className={styles.leashLine}
-          x1="-100"
-          y1="-100"
-          x2="-100"
-          y2="-100"
-        />
+        <path ref={leashPathRef} className={styles.leashPath} d="" />
       </svg>
 
       {/* Cursor — triangle (default/link/view/active) or I-beam (text). */}
