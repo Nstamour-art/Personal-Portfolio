@@ -32,7 +32,7 @@ export function SiteHeader() {
             src={avatarSrc}
             alt={SITE.avatar.alt || SITE.name}
             fill
-            sizes="(max-width: 720px) 80px, 128px"
+            sizes="(max-width: 720px) 160px, 256px"
             className={styles.avatarImg}
             priority
           />

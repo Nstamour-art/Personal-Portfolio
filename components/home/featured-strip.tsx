@@ -63,7 +63,7 @@ export function FeaturedStrip() {
   return (
     <section className={styles.strip}>
       <div className={styles.head}>
-        <div>
+        <div className={styles.headLead}>
           <p className={styles.secLabel}>
             {copy('home.featuredEyebrow', 'Selected work')} · {list.length}
           </p>
@@ -114,7 +114,7 @@ export function FeaturedStrip() {
             project={p}
             index={PROJECTS.indexOf(p) + 1}
             aspectRatio="4/5"
-            sizes="(max-width: 880px) 86vw, 60vw"
+            sizes="(max-width: 880px) 78vw, (max-width: 1400px) 32vw, 440px"
             className={styles.slide}
           />
         ))}

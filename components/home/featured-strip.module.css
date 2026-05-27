@@ -1,22 +1,33 @@
 .strip {
-  padding: 80px var(--pad) 40px;
+  padding: 56px var(--pad) 32px;
   max-width: var(--maxw);
   margin: 0 auto;
+  /* Belt-and-braces clip so the track's negative-margin "peek" can
+   * never push the head or its CTA past the strip's right edge on
+   * narrow / scaled viewports. */
+  overflow: hidden;
 }
 
 .head {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 32px;
-  padding-bottom: 18px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
   gap: 24px;
   flex-wrap: wrap;
 }
 
+/* Lets the title column shrink instead of forcing the controls to
+ * overflow when the head is tight. Pairs with .controls flex-shrink:0
+ * below so the prev/next/All-work cluster always stays whole. */
+.headLead {
+  min-width: 0;
+}
+
 .headTitle {
-  margin-top: 8px;
+  margin-top: 6px;
   max-width: 18ch;
 }
 
@@ -25,6 +36,7 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .nav {
@@ -80,15 +92,20 @@
   display: none;
 }
 
+/* Portrait 4/5 tiles, sized so two-and-a-bit slides peek on desktop
+ * and the whole strip clears a 1080p viewport without the "All work"
+ * CTA at the top falling below the fold. Was clamp(280px, 60vw, 760px)
+ * — at 1920px that produced ~950px-tall tiles which dwarfed the
+ * viewport. */
 .slide {
-  flex: 0 0 clamp(280px, 60vw, 760px);
+  flex: 0 0 clamp(260px, 32vw, 440px);
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
 
 @media (max-width: 880px) {
   .slide {
-    flex: 0 0 86vw;
+    flex: 0 0 78vw;
   }
   .nav {
     display: none;
