@@ -106,16 +106,19 @@ export function CustomCursor() {
      * offset; damping D = velocity carryover per frame (closer to
      * 1 = less damping = more overshoot).
      *
-     *  - K=0.09 (halved from 0.18) → label trails further during
-     *    motion; visible whip on fast moves.
-     *  - D=0.82 (lower than 0.78) → less velocity bleed, so the
-     *    spring rings a bit more before settling.
+     *  - K=0.05 (almost halved again from 0.09) → label clearly
+     *    drags behind the cursor during continuous movement; you
+     *    can see the rope going taut as the pill catches up.
+     *  - D=0.86 (less damping than 0.82) → more velocity survives
+     *    each frame so the pill keeps moving briefly after the
+     *    cursor stops, then bobs into place.
      *
-     * Net effect: physics feel roughly twice as pronounced. The
-     * label sits further from the cursor and oscillates more
-     * before snapping into place. */
-    const K = 0.09;
-    const D = 0.82;
+     * Net effect: the pill feels physically dragged on a rope.
+     * Fast cursor flicks leave the pill lagging behind by a
+     * noticeable beat; stops produce a clear follow-through and
+     * settle. */
+    const K = 0.05;
+    const D = 0.86;
 
     /* Rope simulation — the leash isn't a straight line, it's a
      * chain of N nodes joined by distance constraints. Verlet
