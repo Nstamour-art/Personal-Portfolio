@@ -3,16 +3,17 @@
  * Structure: a zero-size .root element that the RAF loop translates to
  * the pointer. Inside it, two absolutely-positioned siblings:
  *   - .pip  → cursor tip, centered on the pointer (translate -50%/-50%),
- *             z-index 1. Scales by state; becomes the section glyph
+ *             z-index 2. Scales by state; becomes the section glyph
  *             (14px ◆/◇/✉/●) on hover when a glyph is set.
- *   - .pill → frosted backdrop, anchored so its left edge is ~10px LEFT
- *             of the pointer. Its left padding (~22px) leaves room for
- *             the pip to sit visually inside it. Fades in on hover.
+ *   - .pill → frosted backdrop, z-index 1, anchored so it extends
+ *             ~16px LEFT of the pointer. Its ~28px left padding seats
+ *             the pip clearly inside the pill's left region (not at
+ *             the edge), so the pip reads as "sitting on" the pill.
  *
- * Layering: the pip is z-indexed above the pill's background, so the
- * dot/glyph reads clearly on top of the frosted pill in link/view
- * states, and stands alone as a small dot on plain pages in default
- * state (pill opacity 0). */
+ * Layering: the pip's explicit z-index sits above the pill's explicit
+ * z-index — important because .pill's backdrop-filter creates its own
+ * stacking context, which made the implicit auto-vs-1 comparison
+ * brittle across browsers. */
 
 .root {
   position: fixed;
@@ -47,7 +48,10 @@
   font-family: var(--mono);
   font-size: 14px;
   line-height: 1;
-  z-index: 1;
+  /* Sits above .pill (z-index: 1). Explicit so the pip always reads
+   * on top of the frosted backdrop regardless of how browsers handle
+   * the stacking context that backdrop-filter creates on .pill. */
+  z-index: 2;
   transition:
     width 180ms cubic-bezier(0.22, 0.61, 0.36, 1),
     height 180ms cubic-bezier(0.22, 0.61, 0.36, 1),
@@ -62,15 +66,17 @@
   position: absolute;
   top: 0;
   left: 0;
-  /* Anchor: pill's left edge is 10px LEFT of pointer; vertically
-   * centered. Combined with the 22px left padding below, the label
-   * starts ~12px RIGHT of the pointer and the pip sits inside the
-   * pill's left padding zone. */
-  transform: translate(-10px, -50%);
+  /* Anchor: pill's left edge is 16px LEFT of pointer; vertically
+   * centered. Combined with the 28px left padding below, the label
+   * starts ~12px RIGHT of the pointer (unchanged from before) but
+   * the pip now sits clearly inside the pill instead of at its very
+   * edge — so the pill visually reads as expanding *behind* the
+   * cursor pip. */
+  transform: translate(-16px, -50%);
   display: inline-flex;
   align-items: center;
-  /* Asymmetric padding: extra on the left to make room for the pip. */
-  padding: 5px 11px 5px 22px;
+  /* Asymmetric padding: extra on the left to seat the pip. */
+  padding: 5px 12px 5px 28px;
   background: rgba(14, 17, 23, 0.7);
   backdrop-filter: blur(8px) saturate(120%);
   -webkit-backdrop-filter: blur(8px) saturate(120%);
@@ -83,6 +89,10 @@
   text-transform: uppercase;
   border-radius: 2px;
   white-space: nowrap;
+  /* Sits below .pip (z-index: 2). Made explicit because backdrop-filter
+   * creates a stacking context on this element and the implicit `auto`
+   * vs `1` comparison was unreliable across browsers. */
+  z-index: 1;
   opacity: 0;
   transition:
     opacity var(--t-fast),
@@ -99,9 +109,16 @@
 
 .label {
   display: inline-block;
-  /* max-width animates from 0 → ceiling to slide the label in. Ceiling
-   * is generous (30ch ≈ 180px) so long labels like "Take me home" or
-   * social handles ("linkedin.com/in/nstamour") aren't clipped. */
+  /* max-width animates from 0 → ceiling to slide the label in.
+   *
+   * Why 22em (not 30ch): the `ch` unit measures the advance of the
+   * "0" glyph in the *currently rendered* font. Before var(--mono) is
+   * loaded (or in browsers that fall back to a tighter system mono),
+   * 30ch was computing small enough to crop labels like "TAKE ME
+   * HOME" or "@LINKEDIN.COM/IN/NSTAMOUR". `em` ties to font-size only
+   * (always 10px here), so 22em == 220px regardless of font metrics —
+   * comfortably wider than every label we ship plus letter-spacing
+   * (0.1em) overhead. */
   max-width: 0;
   overflow: hidden;
   opacity: 0;
@@ -121,7 +138,7 @@
   opacity: 1;
 }
 .root[data-state='link'] .label {
-  max-width: 30ch;
+  max-width: 22em;
   opacity: 1;
 }
 
@@ -135,7 +152,7 @@
   box-shadow: 0 6px 20px rgba(255, 91, 31, 0.25);
 }
 .root[data-state='view'] .label {
-  max-width: 30ch;
+  max-width: 22em;
   opacity: 1;
 }
 
