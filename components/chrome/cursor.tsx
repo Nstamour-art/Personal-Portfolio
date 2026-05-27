@@ -96,19 +96,26 @@ export function CustomCursor() {
     let raf = 0;
 
     /* Label is offset down-right of the cursor; spring chases this
-     * moving target. Magnitudes picked so the pill never quite
-     * overlaps the click region but stays in peripheral vision. */
-    const LABEL_DX = 18;
-    const LABEL_DY = 22;
+     * moving target. Rest-state offset = leash length at rest.
+     * Doubled from the first pass so the cursor → label
+     * relationship reads more dramatically. */
+    const LABEL_DX = 36;
+    const LABEL_DY = 44;
 
-    /* Spring constants. Stiffness K sets how quickly the label
-     * catches up; damping D bleeds velocity off so the spring
-     * settles (with a touch of overshoot for character). Tuned by
-     * eye for "visible whip on fast moves, no nausea on slow ones".
-     *  - K=0.18, D=0.78 → noticeable spring, ~2 oscillations after
-     *    a hard stop, settles in ~400ms. */
-    const K = 0.18;
-    const D = 0.78;
+    /* Spring constants. Stiffness K = spring force per unit of
+     * offset; damping D = velocity carryover per frame (closer to
+     * 1 = less damping = more overshoot).
+     *
+     *  - K=0.09 (halved from 0.18) → label trails further during
+     *    motion; visible whip on fast moves.
+     *  - D=0.82 (lower than 0.78) → less velocity bleed, so the
+     *    spring rings a bit more before settling.
+     *
+     * Net effect: physics feel roughly twice as pronounced. The
+     * label sits further from the cursor and oscillates more
+     * before snapping into place. */
+    const K = 0.09;
+    const D = 0.82;
 
     /* Pointer source of truth + state derivation. Text-field
      * detection runs regardless of data-cursor so inputs always
