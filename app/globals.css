@@ -23,8 +23,19 @@
   --accent: #ff5b1f;
   --accent-ink: #0e1117;
 
-  /* Layout */
-  --pad: clamp(20px, 3.5vw, 56px);
+  /* Layout
+   *
+   * --pad is the horizontal gutter for every editorial strip on the
+   * site. It scales with viewport width but caps at 56px on desktop.
+   *
+   * Previous value (clamp 20px → 3.5vw → 56px) cleared the desktop cap
+   * around 1600px but only delivered ~25px of breathing room at
+   * tablet widths (600–900px), which made the whole page feel pinned
+   * to the left edge below 720px. The current curve (24px → 5.5vw →
+   * 56px) hits ~40px at 720px and the 56px cap at ~1020px, so tablet
+   * portrait already feels composed without losing the wide-desktop
+   * proportion. */
+  --pad: clamp(24px, 5.5vw, 56px);
   --maxw: 1640px;
   --nav-rail-w: 76px;
 

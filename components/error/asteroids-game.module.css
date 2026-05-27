@@ -1,0 +1,383 @@
+/* "Adrift" — 404 minigame container.
+ *
+ * Layout is two-row:
+ *   .wrap
+ *     .stage    — bordered viewport: canvas + HUD + overlay + touch pad
+ *     .controlStrip — persistent keyboard cheat-sheet underneath
+ *
+ * The stage owns the line border and dark surface so the gameplay area
+ * reads as a discrete viewport; the control strip sits below as a
+ * sibling so the keys are always visible — including during play —
+ * without overlapping the action.
+ *
+ * On coarse pointers (touch) a 4-button virtual pad appears inside the
+ * stage and the keyboard strip is hidden, since touch users can't press
+ * arrow keys anyway. */
+
+.wrap {
+  position: relative;
+  width: 100%;
+  /* Cap the playfield so it feels like an embedded mini-game instead of
+   * a page-replacing takeover. At 16/9 a 1040px width gives a ~585px
+   * canvas — generous to play in, while leaving comfortable room for the
+   * control strip + recovery footer above the fold on a 1080p viewport. */
+  max-width: 1040px;
+  margin: 0 auto;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.stage {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg-2);
+  overflow: hidden;
+}
+
+/* Canvas aspect is wide on desktop and square on mobile so the
+ * recovery footer stays above the fold:
+ *
+ *   Desktop  (>720)   16/9  — cinematic; ~585px tall at the 1040px cap.
+ *   Mobile   (≤720)   1/1   — square; was 4/5 which at 720px viewport
+ *                             produced a ~800px-tall canvas that
+ *                             pushed the recovery footer off-screen.
+ *
+ * The max-height: 70vh fallback caps the canvas on any viewport that
+ * happens to be unusually tall for its width (foldables, dev-tools
+ * device emulation), so the recovery footer is always visible without
+ * scroll regardless of width math. The canvas's draw code reads its
+ * actual rendered dimensions via getBoundingClientRect so the game
+ * still fills whatever shape the clamp produces. */
+.canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 70vh;
+  background: var(--bg);
+  cursor: crosshair;
+}
+
+@media (max-width: 720px) {
+  .canvas {
+    aspect-ratio: 1 / 1;
+  }
+}
+
+/* ─── HUD ──────────────────────────────────────────────────────────── */
+
+.hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 16px;
+  padding: 14px 18px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bg) 70%, transparent),
+    transparent
+  );
+}
+
+.hudLeft,
+.hudCenter,
+.hudRight {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.hudCenter {
+  align-items: center;
+}
+
+.hudRight {
+  align-items: flex-end;
+}
+
+.hudLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.hudValue {
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.hudShips {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+/* Each life is a tiny outline triangle that matches the player ship. */
+.hudShip {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid var(--accent);
+  transform: rotate(-90deg);
+}
+
+/* ─── Overlay (idle / paused / gameover) ───────────────────────────── */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--bg) 78%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 94%, transparent) 70%
+  );
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+/* Constrained text column inside the overlay so the lede doesn't span
+ * the full ~1100px stage width — keeps it readable like an editorial
+ * page section instead of a stretched arcade banner. */
+.overlayCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  max-width: 56ch;
+}
+
+.overlayEyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  margin: 0;
+}
+
+.overlayTitle {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4.4vw, 56px);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  font-weight: 500;
+  color: var(--fg);
+  margin: 0;
+  max-width: 22ch;
+  text-transform: uppercase;
+}
+
+.overlayLede {
+  font-family: var(--sans);
+  font-size: clamp(14px, 1.05vw, 16px);
+  line-height: 1.5;
+  color: var(--fg-2);
+  margin: 0;
+  max-width: 52ch;
+}
+
+.overlayBtn {
+  margin-top: 12px;
+  padding: 13px 26px;
+  font-family: var(--mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  transition:
+    background var(--t-fast),
+    color var(--t-fast),
+    transform var(--t-fast);
+}
+.overlayBtn:hover,
+.overlayBtn:focus-visible {
+  background: var(--accent);
+  color: var(--accent-ink);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.overlayFootnote {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* Score readout on the gameover card — paired label/value pills in mono,
+ * separated by a center dot. Pads slightly so the digits read as a real
+ * scoreboard, not just an inline number. */
+.overlayScore {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 4px 0 4px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  background: color-mix(in oklch, var(--bg) 70%, transparent);
+}
+
+.overlayScoreLabel {
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.overlayScoreValue {
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.overlayScoreSep {
+  color: var(--muted);
+  margin: 0 2px;
+}
+
+/* ─── Persistent control strip ─────────────────────────────────────── */
+
+.controlStrip {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 24px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.controlItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.controlKeys {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.controlOr {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--muted-2);
+  margin: 0 2px;
+}
+
+.controlLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-2);
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 4px;
+  border: 1px solid var(--line-2);
+  background: var(--bg-2);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1;
+  color: var(--fg);
+  /* Subtle bottom edge to read as a physical cap. */
+  box-shadow: 0 1px 0 0 var(--line-2);
+}
+
+.kbdWide {
+  min-width: 52px;
+  padding: 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+/* Touch users can't press the keyboard anyway. */
+@media (pointer: coarse) {
+  .controlStrip {
+    display: none;
+  }
+}
+
+/* ─── Touch pad — only on coarse pointers ──────────────────────────── */
+
+.touchPad {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: none;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 10px;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--bg) 80%, transparent),
+    transparent
+  );
+}
+
+@media (pointer: coarse) {
+  .touchPad {
+    display: grid;
+  }
+}
+
+.touchBtn {
+  appearance: none;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 18px;
+  padding: 14px 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.touchBtnAccent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.touchBtn:active {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}

@@ -1,0 +1,48 @@
+/* Padding is intentionally tight at the top AND bottom:
+ *   Top — the game's idle overlay carries the page's headline + lede,
+ *     so we want the dark canvas to land just below the nav chrome
+ *     rather than below a phantom editorial header.
+ *   Bottom — the global site Footer already provides 80px of its own
+ *     top padding plus a divider line, so any bottom padding we add
+ *     here is doubled. 24px is enough to keep the recovery CTAs from
+ *     touching the footer's top rule. */
+.page {
+  padding: 40px var(--pad) 24px;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 24px var(--pad) 16px;
+    gap: 24px;
+  }
+}
+
+/* Recovery row sits below the game canvas + controls. Kept low-key
+ * (mono note + arrow buttons) so the game stays the focal point. */
+.recover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.recoverNote {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.recoverCtas {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}

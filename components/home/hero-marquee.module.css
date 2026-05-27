@@ -1,39 +1,230 @@
+/* ──────────────────────────────────────────────────────────────────────
+ * Home hero — single layered composition, scaled fluidly across all
+ * viewports. There are NO mobile/tablet/desktop branches that switch
+ * the layout itself; only sizes change via clamp(). The intent: a
+ * creative-technologist hero that reads the same on a 320px phone
+ * and a 2560px monitor — name on the left, portrait filling the
+ * right, marquee behind the figure, hairline cutting off the bloom.
+ *
+ * If you find yourself wanting to add `@media (max-width: …) { ... }`
+ * here that re-anchors children or changes positioning, stop and
+ * adjust the clamps instead. The composition is the design.
+ * ────────────────────────────────────────────────────────────────── */
+
 .hero {
   position: relative;
   width: 100%;
-  /* Top padding tightened because the SiteHeader now lives directly
-   * above this section and already provides breathing room from the
-   * top of the viewport. */
-  padding: 48px var(--pad) 80px;
-  min-height: calc(100vh - 200px);
+  /* Vertical rhythm scales with viewport: tight on phones, generous
+   * on desktop. Bottom padding pushes the next section away from the
+   * hairline divider. */
+  padding: clamp(56px, 6vw, 80px) var(--pad) clamp(48px, 5vw, 72px);
   display: grid;
-  grid-template-rows: 1fr auto;
-  gap: 32px;
+  grid-template-rows: auto auto;
+  gap: clamp(28px, 3vw, 40px);
+  max-width: var(--maxw);
+  margin: 0 auto;
 }
 
-.track {
+/* The identity row is the layered canvas for bloom + marquee + divider
+ * + identity + avatar. Height tracks the avatar's intrinsic aspect
+ * ratio at 60vw width, capped so the row doesn't dominate the page on
+ * ultrawide displays. The hairline divider sits at this row's bottom
+ * edge; the avatar fills the row top-to-bottom so its shoulder line
+ * rests on that divider. */
+.identityRow {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  /* Tuned so:
+   *   • at 320 viewport → 56vw = 179, lower clamp 260 wins
+   *     (gives a 260px-tall hero with room for identity + portrait)
+   *   • at 768 viewport → 56vw = 430, mid-range
+   *   • at 1640+         → upper clamp 760 wins (caps growth) */
+  height: clamp(260px, 56vw, 760px);
+  isolation: isolate;
+}
+
+/* ─── Identity: name + role (z:3) ─────────────────────────────────── */
+
+.identity {
+  position: relative;
+  z-index: 3;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: clamp(4px, 0.5vw, 10px);
+  /* `width: max-content` shrinks the container to the name's natural
+   * one-line width. The role inside (`.identityRole`) uses flex
+   * `space-between` to spread its characters across that same width,
+   * so role tracking visually matches the name's right edge at every
+   * viewport.
+   *
+   * `max-width` then caps growth. The cap is sized to allow the name
+   * to stay on a single line at every viewport that has room — the
+   * avatar's figure occupies roughly the right 50% of its slot (the
+   * left half of the slot is transparent in the PNG), so the identity
+   * can comfortably extend up to ~52vw without crashing the figure.
+   * Upper clamp 700px caps growth on ultrawide displays. Lower clamp
+   * 140px is the floor for very narrow phones where 52vw < 140 and
+   * the name has to wrap anyway. */
+  width: max-content;
+  max-width: clamp(140px, 52vw, 700px);
+  /* Push the name down from the row's top edge so the portrait's
+   * head crowns above the name's baseline visually. */
+  padding-top: clamp(2px, 1vw, 12px);
+}
+
+.identityName {
+  font-family: var(--font-display);
+  /* Lower clamp 20 → "Nicolas St-Amour" wraps to two lines on phones
+   * but never becomes unreadable. Upper clamp 60 → stays on one line
+   * with the desktop max-width (560px). */
+  font-size: clamp(20px, 4.4vw, 60px);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  font-weight: 500;
+  color: var(--fg);
+  margin: 0;
+}
+
+/* Role: individual character spans distributed across the container's
+ * width via flex `space-between`. The container width is driven by the
+ * name above (via `width: max-content` on `.identity`), so the role's
+ * tracking widens or tightens to mirror the name's rendered width at
+ * every viewport. Letter spacing is NOT applied here — the flex gaps
+ * are the spacing.
+ *
+ * Screen readers receive the full phrase via `aria-label` on the <p>
+ * (set in hero-marquee.tsx); the per-character <span>s carry
+ * `aria-hidden` so assistive tech doesn't read it letter by letter. */
+.identityRole {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--mono);
+  font-size: clamp(10px, 1.05vw, 15px);
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
+  /* Keep characters on a single line. Flex items don't wrap by
+   * default but white-space: nowrap protects against any inherited
+   * wrapping behavior on the spans. */
+  white-space: nowrap;
+}
+
+.roleChar {
+  display: inline-block;
+  /* Each character is a fixed-size flex item; never shrink so the
+   * extra room always goes into the inter-character gaps. */
+  flex-shrink: 0;
+}
+
+/* ─── Avatar: transparent portrait, right-anchored (z:4) ─────────── */
+
+.avatar {
+  /* Anchored to the viewport's right edge — `right: -pad` escapes
+   * the hero's right gutter so the portrait reads as the page's
+   * right rail. Top: 0; bottom: 0 makes the slot exactly match the
+   * row's height; combined with object-position right bottom on the
+   * image, the figure's shoulder line lands on the divider below. */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: calc(-1 * var(--pad));
+  z-index: 4;
+  /* Same width scale at every breakpoint — just clamped wider as the
+   * viewport grows. 60vw keeps the portrait as a confident right
+   * rail without crowding the identity at any size. */
+  width: clamp(200px, 60vw, 2000px);
+  pointer-events: none;
+}
+
+.avatarImg {
+  /* `contain` preserves the PNG's transparent regions so the marquee
+   * and bloom show through. `right bottom` anchors the figure to the
+   * bottom-right of the slot — the head crowns up, the shoulders
+   * rest on the divider. */
+  object-fit: contain;
+  object-position: right bottom;
+}
+
+/* ─── Bloom: dot-dither halftone behind the figure (z:0) ──────────── */
+
+.bloom {
+  /* Same coordinate system as the avatar so the dither column rises
+   * exactly behind the figure and terminates at the divider line.
+   * Width is slightly larger than the avatar so the bloom feathers
+   * past the figure's left edge. */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: calc(-1 * var(--pad));
+  z-index: 0;
+  width: clamp(280px, 72vw, 1600px);
+  pointer-events: none;
+
+  /* Dot grid. Each tile (background-size) carries one small disc
+   * (the radial-gradient stop). Pitch ~18px is visibly chunky — a
+   * halftone, not noise. */
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    var(--accent) 0,
+    var(--accent) 1.9px,
+    transparent 2.4px
+  );
+  background-size: clamp(12px, 1.1vw, 18px) clamp(12px, 1.1vw, 18px);
+  background-position: 0 0;
+
+  /* Right-biased elliptical mask: dots are full-opacity behind the
+   * face (~76% across, ~32% down), fade through the upper body,
+   * vanish toward the left and the bloom's edges. */
+  -webkit-mask-image: radial-gradient(
+    ellipse 55% 62% at 76% 32%,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.95) 24%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.18) 80%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 55% 62% at 76% 32%,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.95) 24%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.18) 80%,
+    transparent 100%
+  );
+  opacity: 0.85;
+}
+
+/* ─── Marquee track (z:1) ─────────────────────────────────────────── */
+
+.track {
+  /* Bottom-anchored so the cap-line of the marquee reaches up into
+   * the avatar's mid-ear band. Bleeds past the hero gutters so the
+   * scrolling text fills the viewport edge-to-edge. */
+  position: absolute;
+  bottom: 0;
+  left: calc(-1 * var(--pad));
+  right: calc(-1 * var(--pad));
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
   overflow: hidden;
   white-space: nowrap;
-  margin: 0 calc(-1 * var(--pad));
   user-select: none;
+  min-width: 0;
 }
 
 .inner {
   display: inline-flex;
   align-items: center;
-  /* Was 0.4em — halved to 0.2em alongside .sep's margin (0.2em →
-   * 0.1em) so total word↔dot spacing drops from 0.6em to 0.3em
-   * per side (50% reduction, per design tightening). */
   gap: 0.2em;
   animation: marquee 38s linear infinite;
-  /* ~25% smaller than the original clamp(96, 18vw, 280) so the
-   * marquee reads as a strip rather than a hero. */
-  font-size: clamp(72px, 13.5vw, 210px);
-  /* Dedicated `--font-marquee` slot so the editor can pick a
-   * display-grade font for this one element without affecting
-   * regular headlines. Falls back to --font-display in globals.css. */
+  /* Marquee size tracks the avatar's height so the text always spans
+   * from the divider up to the avatar's mid-ear. Lower clamp keeps
+   * it impactful on phones; upper clamp prevents runaway scale on
+   * ultrawide. */
+  font-size: clamp(110px, 42vw, 560px);
   font-family: var(--font-marquee);
   line-height: 0.86;
   letter-spacing: -0.05em;
@@ -48,20 +239,12 @@
   }
 }
 
-/* Note: deliberately no `.track:hover .inner { animation-play-state:
- * paused }` here — the marquee should keep moving even when the
- * cursor is over it, per the explicit preference of the site owner.
- */
-
 .sep {
   display: inline-block;
-  /* Was 0.5em — 30% smaller dot per design tightening. */
   width: 0.35em;
   height: 0.35em;
   background: var(--accent);
   border-radius: 50%;
-  /* Was 0 0.2em — halved alongside .inner's gap reduction to bring
-   * total word↔dot spacing to 0.3em per side. */
   margin: 0 0.1em;
   flex-shrink: 0;
   align-self: center;
@@ -85,14 +268,34 @@
   }
 }
 
+/* ─── Divider: hairline at the row's bottom (z:2) ────────────────── */
+
+.divider {
+  /* Bleeds past the hero gutters so it reads as a section rule, not
+   * a boxed underline. Sits above the marquee and bloom so it cuts
+   * both off cleanly at the avatar's shoulder line. */
+  position: absolute;
+  left: calc(-1 * var(--pad));
+  right: calc(-1 * var(--pad));
+  bottom: 0;
+  z-index: 2;
+  height: 1px;
+  background: var(--line);
+  pointer-events: none;
+}
+
+/* ─── Below the identity row: featured project teaser ────────────── */
+
 .below {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1fr 1.35fr;
   gap: 56px;
   align-items: center;
 }
 
-@media (max-width: 880px) {
+@media (max-width: 1024px) {
   .below {
     grid-template-columns: 1fr;
     gap: 32px;

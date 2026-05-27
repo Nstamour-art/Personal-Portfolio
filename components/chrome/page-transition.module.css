@@ -1,7 +1,19 @@
+/* Was: min-height: 100vh on .shell — that forced the page-transition
+ * wrapper to fill the viewport on EVERY page, which on short pages
+ * (404, /contact) left a stripe of dead space between the page's last
+ * row and the site footer. Removed so the shell collapses to its
+ * natural content height. Tall pages are unaffected because their
+ * content already exceeds 100vh; the body itself still has
+ * `min-height: 100vh` in globals.css, so the viewport never collapses
+ * below the fold even when the entire page is tiny.
+ *
+ * Pages that want a viewport-tall hero (e.g. the marquee section)
+ * should set min-height on their own root — that keeps the decision
+ * local instead of cascading the cost to every short page in the
+ * site. */
 .shell {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
 }
 
 .content {
