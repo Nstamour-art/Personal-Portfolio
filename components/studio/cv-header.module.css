@@ -1,0 +1,38 @@
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 56px;
+  border-bottom: 1px solid var(--line);
+}
+
+.eyebrow {
+  color: var(--muted);
+}
+
+.name {
+  font-family: var(--display, var(--sans));
+  font-size: clamp(48px, 8vw, 88px);
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--fg);
+}
+
+.role {
+  font-family: var(--mono);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  color: var(--fg-2);
+  margin: 0;
+}
+
+.sep {
+  color: var(--muted);
+}
+
+.headline {
+  margin: 16px 0 0;
+  max-width: 22ch;
+  color: var(--fg);
+}

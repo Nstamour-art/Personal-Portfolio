@@ -1,12 +1,15 @@
+import type { CSSProperties } from 'react';
 import type { Metadata, Viewport } from 'next';
-import { Analytics } from '@vercel/analytics/next';
-import { CustomCursor } from '@/components/chrome/cursor';
-import { Footer } from '@/components/chrome/footer';
-import { NavRail } from '@/components/chrome/nav-rail';
-import { PageTransition } from '@/components/chrome/page-transition';
 import { SITE } from '@/content/site';
-import '@fontsource/ibm-plex-mono/400.css';
-import '@fontsource/ibm-plex-mono/500.css';
+import {
+  THEME,
+  accentColor,
+  displayStack,
+  googleFontsHref,
+  marqueeStack,
+  monoStack,
+  sansStack,
+} from '@/content/theme';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -51,14 +54,49 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  /* Inline CSS custom properties on <html> drive every `var(--...)`
+   * reference in globals.css and the CSS Modules. Setting them here
+   * means a Keystatic theme edit flows end-to-end with just a redeploy:
+   *   --sans         body / paragraph stack
+   *   --font-display h1/h2/h3 + display headlines stack
+   *   --mono         labels / captions / eyebrows stack
+   *   --font-marquee giant scrolling home-hero strip stack
+   *   --accent       hex accent used by brand mark / CTAs / focus
+   */
+  const htmlStyle = {
+    '--sans': sansStack(THEME),
+    '--font-display': displayStack(THEME),
+    '--mono': monoStack(THEME),
+    '--font-marquee': marqueeStack(THEME),
+    '--accent': accentColor(THEME),
+  } as CSSProperties;
+
+  /* When the user has chosen a Google Font, render a single <link> to
+   * the CSS2 endpoint plus preconnects so the font shows up before
+   * paint. React 19 / Next.js 15 hoists these into <head>. */
+  const fontHref = googleFontsHref(THEME);
+
+  /* Root layout is intentionally chrome-free. The public site's nav
+   * rail, page transitions, custom cursor, footer, and analytics
+   * live in app/(site)/layout.tsx so they only mount under the
+   * (site) route group. The /keystatic admin route renders directly
+   * inside this root layout, owning the full viewport without any
+   * site chrome contaminating its scroll container or typography. */
   return (
-    <html lang="en">
-      <body className="nav-rail-mode caps">
-        <CustomCursor />
-        <NavRail />
-        <PageTransition>{children}</PageTransition>
-        <Footer />
-        <Analytics />
+    <html lang="en" style={htmlStyle}>
+      <body>
+        {fontHref && (
+          <>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link
+              rel="preconnect"
+              href="https://fonts.gstatic.com"
+              crossOrigin=""
+            />
+            <link rel="stylesheet" href={fontHref} />
+          </>
+        )}
+        {children}
       </body>
     </html>
   );

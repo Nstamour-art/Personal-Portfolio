@@ -1,0 +1,70 @@
+/* Announcement banner — sits above every public page when enabled.
+ * Uses var(--accent) for the left border accent + CTA arrow so it
+ * picks up the editor's theme colour. Glass-blurred dark background
+ * keeps it visually compatible with the dark editorial palette. */
+
+.bar {
+  position: relative;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 36px;
+  padding: 8px 20px;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--accent) 18%, transparent) 0%,
+      color-mix(in srgb, var(--accent) 6%, transparent) 60%,
+      transparent 100%
+    ),
+    rgba(14, 17, 23, 0.7);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  font: 500 12px/1.4 var(--mono);
+  letter-spacing: 0.02em;
+  color: var(--fg);
+}
+
+.message {
+  margin: 0;
+  text-align: center;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  color: var(--accent);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.cta:hover,
+.cta:focus-visible {
+  background: var(--accent);
+  color: var(--bg);
+  outline: none;
+}
+
+.arrow {
+  display: inline-block;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 720px) {
+  .bar {
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 16px;
+  }
+}

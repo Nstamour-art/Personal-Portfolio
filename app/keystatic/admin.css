@@ -24,12 +24,14 @@ body:has(#__next [data-keystatic]) {
 }
 
 /* Persistent "Back to site" pill, mounted from the page component.
- * Kept here so its styling lives next to the rest of the admin
- * theming rather than as inline styles. */
+ * Anchored bottom-right because Keystatic owns the top-right corner
+ * for per-entry actions (Reset / Copy / Paste / Save) and the
+ * top-left corner for its brand mark. Bottom-right is the only
+ * fully-empty corner across every admin view. */
 .adm-back {
   position: fixed;
-  top: 12px;
-  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  right: max(16px, env(safe-area-inset-right, 16px));
   z-index: 2147483647;
   display: inline-flex;
   align-items: center;

@@ -1,0 +1,131 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  /* A thin rule on the left mirrors the CV's main-column structure. */
+  padding-left: clamp(0px, 2vw, 24px);
+  border-left: 1px solid var(--line);
+  padding-left: clamp(16px, 2vw, 28px);
+}
+
+@media (max-width: 880px) {
+  .sidebar {
+    border-left: 0;
+    padding-left: 0;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+    gap: 48px;
+  }
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.head {
+  color: var(--muted);
+}
+
+.contact {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.contact li {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.k {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-2, var(--muted));
+}
+
+.v {
+  font-size: 14px;
+  color: var(--fg);
+  text-decoration: none;
+  word-break: break-word;
+}
+
+a.v {
+  background-image: linear-gradient(to right, var(--accent), var(--accent));
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0 1px;
+  transition:
+    background-size var(--t-fast, 180ms) ease,
+    color var(--t-fast, 180ms) ease;
+}
+
+a.v:hover,
+a.v:focus-visible {
+  background-size: 100% 1px;
+  color: var(--accent);
+  outline: none;
+}
+
+.bring {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bring li {
+  font-size: 14px;
+  color: var(--fg);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.bring li::before {
+  content: '—';
+  color: var(--muted-2, var(--muted));
+}
+
+.skillGroup {
+  margin-bottom: 18px;
+}
+
+.skillGroup:last-child {
+  margin-bottom: 0;
+}
+
+.skillH {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 10px;
+  font-weight: 400;
+}
+
+.skillList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skillList li {
+  font-size: 14px;
+  color: var(--fg);
+}

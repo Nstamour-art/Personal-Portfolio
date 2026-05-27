@@ -60,6 +60,11 @@ export interface Project {
   output?: string;
 
   featured?: boolean;
+  draft?: boolean;
+
+  /** Optional per-entry overrides for <title> and meta description. */
+  seoTitle?: string;
+  seoDescription?: string;
 
   ph?: ProceduralKey;
   span?: SpanKey;
@@ -74,6 +79,11 @@ export interface Note {
   body: string;
   cover?: MediaSlot;
   pinned?: boolean;
+  draft?: boolean;
+
+  /** Optional per-entry overrides for <title> and meta description. */
+  seoTitle?: string;
+  seoDescription?: string;
 }
 
 export interface Social {
@@ -115,11 +125,10 @@ export interface EditorialCopy {
     typeHeadline?: string;
     typeRoleStrip?: string[];
     typeMetaGrid?: { k: string; v: string }[];
-    reelEyebrow?: string;
-    reelMeta?: string;
-    reelHeadline?: string;
-    reelBlurb?: string;
-    reelNowPlaying?: string;
+  };
+  notes: {
+    eyebrowPrefix: string;
+    lede: string;
   };
   work: {
     eyebrowPrefix: string;
@@ -140,12 +149,20 @@ export interface EditorialCopy {
   about: {
     eyebrow: string;
     headline: string;
+    /** New top-of-CV summary paragraph. */
+    summary?: string;
     practiceLabel: string;
     practiceLines: string[];
-    aboutLabel: string;
-    aboutParagraphs: string[];
     experienceEyebrow: string;
     experienceHeadline: string;
+    /** Optional eyebrows for the CV's Education and Awards sections. */
+    educationEyebrow?: string;
+    awardsEyebrow?: string;
+    /** Legacy fields preserved so existing data still parses. The new
+     *  CV layout no longer renders them, but Keystatic kept them as
+     *  optional in case you want to restore the manifesto later. */
+    aboutLabel?: string;
+    aboutParagraphs?: string[];
   };
   contact: {
     eyebrow: string;
@@ -174,4 +191,18 @@ export interface ExperienceRow {
 export interface SkillGroup {
   h: string;
   items: string[];
+}
+
+export interface EducationRow {
+  year: string;
+  school: string;
+  programme: string;
+  note?: string;
+}
+
+export interface AwardRow {
+  year: string;
+  title: string;
+  source: string;
+  href?: string;
 }

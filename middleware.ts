@@ -96,17 +96,17 @@ function withSecurityHeaders(res: NextResponse, opts: HeaderOpts) {
    *    the next hardening step (see ADMIN_SECURITY.md).
    *  - frame-src allows the two embed providers we actually use. If you add
    *    Loom / Wistia / etc, extend this allowlist.
-   *  - Admin routes need a slightly looser CSP because the Keystatic Cloud
-   *    admin shell loads its own webfont stylesheet from Google Fonts and,
-   *    more importantly, fetches content JSON/markdown DIRECTLY from
-   *    raw.githubusercontent.com (using SHA-pinned URLs returned by the
-   *    Keystatic Cloud GraphQL API). Without raw.githubusercontent.com in
-   *    connect-src, every editor view fails with "Failed to fetch". */
+   *  - Google Fonts (fonts.googleapis.com for the CSS, fonts.gstatic.com
+   *    for the woff2 files) is allowed site-wide because the public
+   *    site loads whichever family is configured in data/theme.json,
+   *    and the Keystatic admin shell loads its own webfonts.
+   *  - Admin routes also need raw.githubusercontent.com in connect-src
+   *    because Keystatic Cloud fetches content JSON/markdown DIRECTLY
+   *    from there (using SHA-pinned URLs returned by its GraphQL API).
+   *    Without it, every editor view fails with "Failed to fetch". */
   const adminConnect = opts.admin
     ? ' https://raw.githubusercontent.com'
     : '';
-  const adminStyle = opts.admin ? ' https://fonts.googleapis.com' : '';
-  const adminFont = opts.admin ? ' https://fonts.gstatic.com' : '';
 
   const csp = [
     `default-src 'self'`,
@@ -115,9 +115,9 @@ function withSecurityHeaders(res: NextResponse, opts: HeaderOpts) {
     `form-action 'self' https://keystatic.cloud`,
     `frame-ancestors 'none'`,
     `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com`,
-    `style-src 'self' 'unsafe-inline'${adminStyle}`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src 'self' data: blob: https:`,
-    `font-src 'self' data:${adminFont}`,
+    `font-src 'self' data: https://fonts.gstatic.com`,
     `media-src 'self' blob: https://player.vimeo.com https://*.vimeocdn.com`,
     `frame-src 'self' https://player.vimeo.com https://www.youtube.com https://www.youtube-nocookie.com https://keystatic.cloud`,
     `connect-src 'self' https://vitals.vercel-insights.com https://*.vercel-insights.com https://va.vercel-scripts.com https://api.keystatic.cloud https://keystatic.cloud${adminConnect}`,

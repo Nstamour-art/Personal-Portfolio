@@ -16,12 +16,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const note = getNote(slug);
   if (!note) return { title: 'Not found' };
+  const title = note.seoTitle?.trim() || note.title;
+  const description = note.seoDescription?.trim() || note.summary;
   return {
-    title: note.title,
-    description: note.summary,
+    title,
+    description,
     openGraph: {
-      title: note.title,
-      description: note.summary,
+      title,
+      description,
       type: 'article',
       publishedTime: note.date,
     },

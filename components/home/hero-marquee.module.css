@@ -23,11 +23,18 @@
 .inner {
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
+  /* Was 0.4em — halved to 0.2em alongside .sep's margin (0.2em →
+   * 0.1em) so total word↔dot spacing drops from 0.6em to 0.3em
+   * per side (50% reduction, per design tightening). */
+  gap: 0.2em;
   animation: marquee 38s linear infinite;
   /* ~25% smaller than the original clamp(96, 18vw, 280) so the
    * marquee reads as a strip rather than a hero. */
   font-size: clamp(72px, 13.5vw, 210px);
+  /* Dedicated `--font-marquee` slot so the editor can pick a
+   * display-grade font for this one element without affecting
+   * regular headlines. Falls back to --font-display in globals.css. */
+  font-family: var(--font-marquee);
   line-height: 0.86;
   letter-spacing: -0.05em;
   font-weight: 500;
@@ -48,11 +55,14 @@
 
 .sep {
   display: inline-block;
-  width: 0.5em;
-  height: 0.5em;
+  /* Was 0.5em — 30% smaller dot per design tightening. */
+  width: 0.35em;
+  height: 0.35em;
   background: var(--accent);
   border-radius: 50%;
-  margin: 0 0.2em;
+  /* Was 0 0.2em — halved alongside .inner's gap reduction to bring
+   * total word↔dot spacing to 0.3em per side. */
+  margin: 0 0.1em;
   flex-shrink: 0;
   align-self: center;
 }

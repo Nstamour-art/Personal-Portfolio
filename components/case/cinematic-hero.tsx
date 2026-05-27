@@ -1,4 +1,9 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
+import { ExpandableMedia } from '@/components/primitives/expandable-media';
+import { Lightbox } from '@/components/primitives/lightbox';
 import { VideoHero } from '@/components/primitives/video-hero';
 import type { Project } from '@/content/types';
 import { copy } from '@/lib/copy';
@@ -15,18 +20,58 @@ export function CinematicHero({ project, index, total }: CinematicHeroProps) {
   const totalPadded = String(total).padStart(2, '0');
   const hasMedia = Boolean(project.heroVideo) || Boolean(project.hero?.src);
 
+  /* When the embedded video is actively playing, fade out the entire
+   * title/back/counter/meta overlay (and the gradient behind it) so
+   * the playback surface is unobscured. VideoHero broadcasts the
+   * state; for iframes it's coarse (play vs ✕ Stop), for HTML5
+   * <video> it follows native play/pause/ended. */
+  const [videoPlaying, setVideoPlaying] = useState(false);
+
+  /* Image-only heroes (no heroVideo URL, just an uploaded image) get
+   * the lightbox treatment via a small corner expand button. Video
+   * heroes (YouTube / Vimeo / mp4) rely on the player's native
+   * fullscreen control instead — adding a second affordance would
+   * compete with the play button and the platform's own UI. */
+  const heroSrc =
+    typeof project.hero?.src === 'string' ? project.hero.src : '';
+  const heroIsImageOnly = !project.heroVideo && heroSrc.trim() !== '';
+  const [heroOpen, setHeroOpen] = useState(false);
+
   return (
     <section className={styles.hero}>
       <div className={styles.surface}>
-        <VideoHero
-          project={project}
-          showLabel={!hasMedia}
-          labelText={project.hero?.alt || `${project.title} — hero image`}
-          sizes="100vw"
-          priority
-        />
+        {heroIsImageOnly ? (
+          <ExpandableMedia
+            onExpand={() => setHeroOpen(true)}
+            label={`Expand hero image — ${project.title}`}
+            clickArea="icon"
+          >
+            <VideoHero
+              project={project}
+              showLabel={!hasMedia}
+              labelText={
+                project.hero?.alt || `${project.title} — hero image`
+              }
+              sizes="100vw"
+              priority
+              onPlayingChange={setVideoPlaying}
+            />
+          </ExpandableMedia>
+        ) : (
+          <VideoHero
+            project={project}
+            showLabel={!hasMedia}
+            labelText={project.hero?.alt || `${project.title} — hero image`}
+            sizes="100vw"
+            priority
+            onPlayingChange={setVideoPlaying}
+          />
+        )}
       </div>
-      <div className={styles.overlay}>
+      <div
+        className={`${styles.overlay} ${videoPlaying ? styles.overlayHidden : ''}`}
+        aria-hidden={videoPlaying || undefined}
+      >
         <div className={styles.top}>
           <Link
             href="/work"
@@ -66,6 +111,20 @@ export function CinematicHero({ project, index, total }: CinematicHeroProps) {
           </div>
         </div>
       </div>
+
+      {heroIsImageOnly && heroOpen ? (
+        <Lightbox
+          items={[
+            {
+              src: heroSrc,
+              alt: project.hero?.alt || `${project.title} — hero image`,
+              caption: { label: project.title, note: project.sub },
+            },
+          ]}
+          initialIndex={0}
+          onClose={() => setHeroOpen(false)}
+        />
+      ) : null}
     </section>
   );
 }

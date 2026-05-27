@@ -18,7 +18,8 @@
   --muted: #7a7f8a;
   --muted-2: #4f535e;
 
-  /* Accent */
+  /* Accent — overridden inline on <html> by app/layout.tsx based on
+   * data/theme.json (editable from Keystatic → Theme). */
   --accent: #ff5b1f;
   --accent-ink: #0e1117;
 
@@ -33,11 +34,21 @@
   --t-slow: 720ms cubic-bezier(0.22, 0.61, 0.36, 1);
   --t-wipe: 720ms cubic-bezier(0.65, 0.05, 0.36, 1);
 
-  /* Type stacks — IBM Plex Mono is self-hosted via @fontsource imports in
-   * app/layout.tsx (woff2 served from /_next/static). System sans stack
-   * intentionally has no webfont download. */
+  /* Type stacks — overridden inline on <html> by app/layout.tsx based
+   * on data/theme.json (editable from Keystatic → Theme). These
+   * `:root` defaults are pure system fonts so the site still renders
+   * correctly if the inline style is somehow missing.
+   *
+   * Slot model:
+   *   --sans         body / paragraph text
+   *   --font-display h1/h2/h3 headlines (cascades from --sans)
+   *   --mono         small labels / eyebrows / captions
+   *   --font-marquee giant home-hero scrolling words (cascades from display)
+   */
   --sans: 'Helvetica Neue', 'Helvetica', 'Arial', system-ui, sans-serif;
-  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-display: var(--sans);
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-marquee: var(--font-display);
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -99,12 +110,14 @@ body.cursor-on [contenteditable='true'] {
   }
 }
 
-/* Nav rail mode pads the body so content clears the fixed rail. */
-body.nav-rail-mode {
+/* Nav-rail mode pads the site-group wrapper so content clears the
+ * fixed rail. Applied on the `(site)/layout.tsx` wrapper, not on
+ * <body>, so the /keystatic admin route can own the full viewport. */
+.nav-rail-mode {
   padding-left: var(--nav-rail-w);
 }
 @media (max-width: 720px) {
-  body.nav-rail-mode {
+  .nav-rail-mode {
     padding-left: 0;
     padding-top: 56px;
   }
@@ -150,6 +163,12 @@ button {
  * Type scale — SPEC §2.
  * ──────────────────────────────────────────────────────────────────────── */
 
+.t-display,
+.t-h1,
+.t-h2,
+.t-h3 {
+  font-family: var(--font-display);
+}
 .t-display {
   font-size: clamp(56px, 11vw, 184px);
   line-height: 0.86;
@@ -211,17 +230,17 @@ button {
  * only. Body prose stays sentence-case. SPEC §2.
  * ──────────────────────────────────────────────────────────────────────── */
 
-body.caps .t-display,
-body.caps .t-h1,
-body.caps .t-h2,
-body.caps .t-h3,
-body.caps .caps-on,
-body.caps .tile-title,
-body.caps .hero-title,
-body.caps .marquee-word,
-body.caps .footer-big,
-body.caps .exp-role,
-body.caps .note-title {
+.caps .t-display,
+.caps .t-h1,
+.caps .t-h2,
+.caps .t-h3,
+.caps .caps-on,
+.caps .tile-title,
+.caps .hero-title,
+.caps .marquee-word,
+.caps .footer-big,
+.caps .exp-role,
+.caps .note-title {
   text-transform: uppercase;
   letter-spacing: -0.02em;
 }

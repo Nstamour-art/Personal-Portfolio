@@ -11,7 +11,7 @@ export function NotesIndex() {
       <header className={styles.head}>
         <div>
           <p className="t-eyebrow" style={{ color: 'var(--muted)' }}>
-            Notes & writing · {notes.length}
+            {copy('notes.eyebrowPrefix', 'Notes & writing')} · {notes.length}
           </p>
           <h1 className="t-h1" style={{ marginTop: 12 }}>
             {copy(
@@ -21,8 +21,10 @@ export function NotesIndex() {
           </h1>
         </div>
         <p className={`t-body ${styles.lede}`}>
-          Process notes, essays, and tooling logs. Most started as private
-          documentation that turned out to be worth sharing.
+          {copy(
+            'notes.lede',
+            'Process notes, essays, and tooling logs. Most started as private documentation that turned out to be worth sharing.',
+          )}
         </p>
       </header>
 
