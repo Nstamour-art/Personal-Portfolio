@@ -35,6 +35,7 @@ export function NavRail() {
               className={styles.link}
               href={n.path}
               data-cursor="link"
+              data-cursor-label={n.cursorLabel}
               data-active={isActive ? 'true' : 'false'}
               aria-current={isActive ? 'page' : undefined}
             >

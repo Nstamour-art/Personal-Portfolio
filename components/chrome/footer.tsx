@@ -37,7 +37,7 @@ export function Footer() {
         <ul>
           {NAV.map((n) => (
             <li key={n.id}>
-              <Link href={n.path} data-cursor="link">
+              <Link href={n.path} data-cursor="link" data-cursor-label={n.cursorLabel}>
                 {n.label}
               </Link>
             </li>

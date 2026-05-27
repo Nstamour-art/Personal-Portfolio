@@ -134,10 +134,15 @@ export function CustomCursor() {
         const el = target?.closest?.('[data-cursor]') as HTMLElement | null;
         next = el?.dataset['cursor'] ?? 'default';
         label = el?.dataset['cursorLabel'] ?? '';
-        /* Sensible fallbacks so a labelled state never renders an
-         * empty pill: link → "→", view → "View". */
+        /* Universal fallbacks for labelled states with no explicit
+         * `data-cursor-label`. We use full words rather than glyphs
+         * so the pill reads as "do a thing" instead of decoration:
+         *   link → "Proceed"  (clickthrough to another page/action)
+         *   view → "View"     (look at content in place)
+         * Main nav tabs supply their own personality labels via
+         * NAV.cursorLabel in content/disciplines.ts; those win. */
         if (next !== 'default' && next !== 'text' && !label) {
-          label = next === 'view' ? 'View' : '→';
+          label = next === 'view' ? 'View' : 'Proceed';
         }
       }
 
