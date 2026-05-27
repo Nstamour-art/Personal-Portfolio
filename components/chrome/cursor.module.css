@@ -1,85 +1,207 @@
-/* Custom cursor — HUD chip. SPEC §6.2 + cursor redesign 2026-05-26.
+/* Custom cursor — pointer + leashed label (2026-05-26 rewrite).
  *
- * Structure: a zero-size .root element that the RAF loop translates to
- * the pointer. Inside it, two absolutely-positioned siblings:
- *   - .pip  → cursor tip, centered on the pointer (translate -50%/-50%),
- *             z-index 2. Scales by state; becomes the section glyph
- *             (14px ◆/◇/✉/●) on hover when a glyph is set.
- *   - .pill → frosted backdrop, z-index 1, anchored so it extends
- *             ~16px LEFT of the pointer. Its ~28px left padding seats
- *             the pip clearly inside the pill's left region (not at
- *             the edge), so the pip reads as "sitting on" the pill.
+ * Three fixed-position siblings, each transform-written by the
+ * RAF loop in cursor.tsx:
  *
- * Layering: the pip's explicit z-index sits above the pill's explicit
- * z-index — important because .pill's backdrop-filter creates its own
- * stacking context, which made the implicit auto-vs-1 comparison
- * brittle across browsers. */
+ *   .leashSvg  — full-viewport <svg> with a single <line>; updated
+ *                each frame from cursor endpoint to label endpoint.
+ *   .cursor    — the cursor itself (triangle SVG + I-beam SVG +
+ *                pulse element). Positioned so the cursor element's
+ *                origin (top-left) sits exactly at the pointer.
+ *   .label     — frosted pill containing the contextual label text.
+ *                Its element origin is the pill's top-left corner,
+ *                which is rendered sharp (no border-radius) so the
+ *                leash terminates cleanly at that anchor point.
+ *
+ * State is published on body[data-cursor-state] and
+ * body[data-cursor-active], so every CSS rule below can read it
+ * without needing per-element refs.
+ *
+ * Z-stack (highest on top so the cursor never gets buried):
+ *   leash:  2147483645
+ *   label:  2147483646
+ *   cursor: 2147483647
+ */
 
-.root {
+/* ─── LEASH ────────────────────────────────────────────────────────── */
+
+.leashSvg {
   position: fixed;
   top: 0;
   left: 0;
-  width: 0;
-  height: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 2147483645;
+  /* Keep the line visible if either endpoint slips off-canvas. */
+  overflow: visible;
+}
+
+.leashLine {
+  stroke: var(--accent);
+  stroke-width: 1;
+  fill: none;
+  opacity: 0;
+  /* Slightly softer easing than the label so the leash hangs back
+   * during the first ~80ms of a hover — feels like the line is
+   * being pulled taut as the label catches up. */
+  transition: opacity 240ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+body[data-cursor-state='link'] .leashLine,
+body[data-cursor-state='view'] .leashLine {
+  opacity: 0.55;
+}
+
+body[data-cursor-state='view'] .leashLine {
+  stroke-width: 1.25;
+}
+
+/* ─── CURSOR (triangle / I-beam) ──────────────────────────────────── */
+
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
   pointer-events: none;
   z-index: 2147483647;
+  /* opacity is what the doc-leave handler toggles. */
   opacity: 1;
   transition: opacity var(--t-fast);
   will-change: transform;
 }
 
-/* ─── PIP — the cursor tip itself ─────────────────────────────────── */
-
-.pip {
+/* Triangle: filled off-white with a dark stroke for universal
+ * legibility — same trick the OS pointer uses. The triangle's hot
+ * tip (path's M0 0) sits at the cursor element's top-left, which
+ * the RAF loop translates to the actual pointer position. */
+.triangle {
   position: absolute;
   top: 0;
   left: 0;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3px;
-  height: 3px;
-  background: var(--accent);
-  border-radius: 50%;
-  /* Glyph text is invisible by default — the dot is the visual. State
-   * rules below reveal the glyph on hover when a section glyph is set. */
-  color: transparent;
-  font-family: var(--mono);
-  font-size: 14px;
-  line-height: 1;
-  /* Sits above .pill (z-index: 1). Explicit so the pip always reads
-   * on top of the frosted backdrop regardless of how browsers handle
-   * the stacking context that backdrop-filter creates on .pill. */
-  z-index: 2;
+  display: block;
+  fill: var(--fg);
+  stroke: rgba(14, 17, 23, 0.85);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  /* Scale from the hot tip so the pointer never drifts on
+   * size-change transitions. */
+  transform-origin: 0 0;
+  /* Subtle drop-shadow gives the cursor depth on flat areas and
+   * helps it survive on similar-toned surfaces. */
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
   transition:
-    width 180ms cubic-bezier(0.22, 0.61, 0.36, 1),
-    height 180ms cubic-bezier(0.22, 0.61, 0.36, 1),
-    background-color 180ms,
-    color 180ms,
-    box-shadow 200ms;
+    transform 200ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 200ms,
+    fill 200ms;
 }
 
-/* ─── PILL — the frosted label container that wraps the pip ───────── */
+/* I-beam: a thin vertical stroke + serifs, used over text fields.
+ * Centered on the cursor element's origin (top-left), so the hot
+ * point sits at the actual pointer rather than offset down/right. */
+.ibeam {
+  position: absolute;
+  /* Half the viewBox: width 14 → -7, height 22 → -11. */
+  top: -11px;
+  left: -7px;
+  display: block;
+  stroke: var(--fg);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  fill: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+  opacity: 0;
+  transform-origin: 50% 50%;
+  transform: scale(0.6);
+  transition:
+    opacity 200ms,
+    transform 200ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
 
-.pill {
+/* Pulse ring on click — same one we had before, now anchored to
+ * the triangle's tip (cursor element's origin). */
+.pulse {
   position: absolute;
   top: 0;
   left: 0;
-  /* Anchor: pill's left edge is 16px LEFT of pointer; vertically
-   * centered. Combined with the 28px left padding below, the label
-   * starts ~12px RIGHT of the pointer (unchanged from before) but
-   * the pip now sits clearly inside the pill instead of at its very
-   * edge — so the pill visually reads as expanding *behind* the
-   * cursor pip. */
-  transform: translate(-16px, -50%);
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* ─── STATES ──────────────────────────────────────────────────────── */
+
+/* link / view: triangle grows to draw attention. View gets a stronger
+ * accent presence via fill + brighter shadow. */
+body[data-cursor-state='link'] .triangle,
+body[data-cursor-state='view'] .triangle {
+  transform: scale(1.5);
+}
+
+body[data-cursor-state='view'] .triangle {
+  fill: var(--accent);
+  stroke: rgba(14, 17, 23, 0.95);
+  filter: drop-shadow(0 2px 6px rgba(255, 91, 31, 0.4));
+}
+
+/* text: triangle fades to nothing, I-beam takes over. */
+body[data-cursor-state='text'] .triangle {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+body[data-cursor-state='text'] .ibeam {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* active click pulse — runs once on each mousedown over a link/view
+ * target. The animation rule matches only when both attributes are
+ * set, so toggling [data-cursor-active] flips the rule on/off and
+ * causes the animation to restart from scratch on each click. */
+body[data-cursor-active='1'][data-cursor-state='link'] .pulse,
+body[data-cursor-active='1'][data-cursor-state='view'] .pulse {
+  animation: cursor-pulse 360ms ease-out;
+}
+
+@keyframes cursor-pulse {
+  0% {
+    width: 6px;
+    height: 6px;
+    margin-top: -3px;
+    margin-left: -3px;
+    opacity: 0.85;
+    border-width: 2px;
+  }
+  100% {
+    width: 32px;
+    height: 32px;
+    margin-top: -16px;
+    margin-left: -16px;
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+/* ─── LABEL PILL ─────────────────────────────────────────────────── */
+
+.label {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 2147483646;
   display: inline-flex;
   align-items: center;
-  /* Asymmetric padding: extra on the left to seat the pip. */
-  padding: 5px 12px 5px 28px;
+  padding: 5px 12px;
   background: rgba(14, 17, 23, 0.7);
-  backdrop-filter: blur(8px) saturate(120%);
-  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
   border: 1px solid rgba(237, 229, 216, 0.15);
   color: var(--fg);
   font-family: var(--mono);
@@ -87,96 +209,60 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  border-radius: 2px;
+  /* Sharp top-left corner = the leash anchor point. The other three
+   * stay rounded so the pill still reads as a soft chip. */
+  border-radius: 0 4px 4px 4px;
   white-space: nowrap;
-  /* Sits below .pip (z-index: 2). Made explicit because backdrop-filter
-   * creates a stacking context on this element and the implicit `auto`
-   * vs `1` comparison was unreliable across browsers. */
-  z-index: 1;
   opacity: 0;
+  /* The RAF loop owns transform; we animate opacity + box-shadow
+   * here, never transform, to avoid stomping on it each frame. */
   transition:
-    opacity var(--t-fast),
-    box-shadow 200ms;
+    opacity 200ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 220ms;
+  will-change: transform, opacity;
 }
 
-/* Backdrop-filter fallback: near-opaque dark pill on browsers without
- * the filter (Firefox without flag, older browsers). */
 @supports not (backdrop-filter: blur(1px)) {
-  .pill {
+  .label {
     background: rgba(14, 17, 23, 0.92);
   }
 }
 
-.label {
+.labelText {
   display: inline-block;
-  /* max-width animates from 0 → ceiling to slide the label in.
-   *
-   * Why 22em (not 30ch): the `ch` unit measures the advance of the
-   * "0" glyph in the *currently rendered* font. Before var(--mono) is
-   * loaded (or in browsers that fall back to a tighter system mono),
-   * 30ch was computing small enough to crop labels like "TAKE ME
-   * HOME" or "@LINKEDIN.COM/IN/NSTAMOUR". `em` ties to font-size only
-   * (always 10px here), so 22em == 220px regardless of font metrics —
-   * comfortably wider than every label we ship plus letter-spacing
-   * (0.1em) overhead. */
-  max-width: 0;
+  /* See cursor.tsx for why em over ch: ch depends on the loaded
+   * font's "0" glyph metrics, which made labels crop before the
+   * mono font finished loading. em is locked to font-size only. */
+  max-width: 22em;
   overflow: hidden;
-  opacity: 0;
-  transition:
-    max-width 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 180ms;
 }
 
-/* ─── STATES (driven by data-state on .root) ──────────────────────── */
-
-/* link: pip 6px, pill fades in around it, label slides in */
-.root[data-state='link'] .pip {
-  width: 6px;
-  height: 6px;
-}
-.root[data-state='link'] .pill {
-  opacity: 1;
-}
-.root[data-state='link'] .label {
-  max-width: 22em;
+body[data-cursor-state='link'] .label,
+body[data-cursor-state='view'] .label {
   opacity: 1;
 }
 
-/* view: pip 10px, pill with subtle accent glow */
-.root[data-state='view'] .pip {
-  width: 10px;
-  height: 10px;
-}
-.root[data-state='view'] .pill {
-  opacity: 1;
-  box-shadow: 0 6px 20px rgba(255, 91, 31, 0.25);
-}
-.root[data-state='view'] .label {
-  max-width: 22em;
-  opacity: 1;
+body[data-cursor-state='view'] .label {
+  box-shadow: 0 6px 22px rgba(255, 91, 31, 0.28);
 }
 
-/* When the active section has a glyph (◆/◇/✉/●) AND we're hovering an
- * interactive target, the pip transforms from a colored dot into the
- * glyph character — a section continuity cue right at the pointer. */
-.root[data-state='link'] .pip[data-glyph]:not([data-glyph='']),
-.root[data-state='view'] .pip[data-glyph]:not([data-glyph='']) {
-  width: 14px;
-  height: 14px;
-  background: transparent;
-  color: var(--accent);
+/* Click intensification — keeps the accent tie between cursor and
+ * label visible while the mouse is held. */
+body[data-cursor-active='1'][data-cursor-state='link'] .label,
+body[data-cursor-active='1'][data-cursor-state='view'] .label {
+  box-shadow: 0 8px 26px rgba(255, 91, 31, 0.4);
 }
 
-/* Active state: wired by mousedown/mouseup listeners in cursor.tsx.
- * The spec also called for transform: scale(1.08) on active, but the
- * RAF loop writes inline transform every frame on .root, which would
- * override any CSS transform here. We preserve the visual intent
- * (a clear "click" pulse) via intensified box-shadow + pip ring. */
-.root[data-active='1'][data-state='link'] .pill,
-.root[data-active='1'][data-state='view'] .pill {
-  box-shadow: 0 6px 22px rgba(255, 91, 31, 0.35);
-}
-.root[data-active='1'][data-state='link'] .pip,
-.root[data-active='1'][data-state='view'] .pip {
-  box-shadow: 0 0 0 3px rgba(255, 91, 31, 0.3);
+/* ─── REDUCED MOTION ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .triangle,
+  .ibeam,
+  .label,
+  .leashLine {
+    transition: none;
+  }
+  .pulse {
+    animation: none;
+  }
 }
