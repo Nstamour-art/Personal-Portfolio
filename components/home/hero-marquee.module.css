@@ -6,6 +6,14 @@
  * and a 2560px monitor — name on the left, portrait filling the
  * right, marquee behind the figure, hairline cutting off the bloom.
  *
+ * Wide-viewport behavior: above `var(--maxw)` the hero box keeps
+ * scaling (the divider, marquee, and identityRow bleed edge-to-edge),
+ * but the avatar and bloom freeze at their maxw-viewport sizes — see
+ * the upper bounds on `.avatar` and `.bloom` (both expressed as a
+ * percentage of `--maxw`). The `.below` (featured project) block
+ * re-applies the maxw cap so it stays aligned with the editorial
+ * strips beneath the hero.
+ *
  * If you find yourself wanting to add `@media (max-width: …) { ... }`
  * here that re-anchors children or changes positioning, stop and
  * adjust the clamps instead. The composition is the design.
@@ -21,8 +29,12 @@
   display: grid;
   grid-template-rows: auto auto;
   gap: clamp(28px, 3vw, 40px);
-  max-width: var(--maxw);
-  margin: 0 auto;
+  /* No max-width here: above var(--maxw) the hero box keeps stretching
+   * edge-to-edge (divider, marquee, identityRow all bleed full-width)
+   * while the avatar and bloom freeze at their maxw-viewport sizes
+   * (see `.avatar` and `.bloom`). The `.below` block re-applies the
+   * maxw cap so the featured-project teaser stays aligned with the
+   * editorial strips beneath the hero. */
 }
 
 /* The identity row is the layered canvas for bloom + marquee + divider
@@ -131,10 +143,13 @@
   bottom: 0;
   right: calc(-1 * var(--pad));
   z-index: 4;
-  /* Same width scale at every breakpoint — just clamped wider as the
-   * viewport grows. 60vw keeps the portrait as a confident right
-   * rail without crowding the identity at any size. */
-  width: clamp(200px, 60vw, 2000px);
+  /* 60vw keeps the portrait as a confident right rail at every
+   * viewport, lower clamp protects very narrow phones. The upper
+   * clamp is locked to the size the formula produces at the site's
+   * max width (60% × --maxw = 984px at maxw=1640): above maxw the
+   * portrait freezes here while the hero box keeps growing around
+   * it. Anchored to the viewport's right edge via `right: -pad`. */
+  width: clamp(200px, 60vw, calc(0.6 * var(--maxw)));
   pointer-events: none;
 }
 
@@ -159,7 +174,11 @@
   bottom: 0;
   right: calc(-1 * var(--pad));
   z-index: 0;
-  width: clamp(280px, 72vw, 1600px);
+  /* Bloom width tracks the avatar at +20% so the dither feathers
+   * past the figure's left edge. Upper clamp locked to the size at
+   * maxw (72% × --maxw ≈ 1181px at maxw=1640): above maxw the bloom
+   * freezes alongside the avatar instead of growing with the box. */
+  width: clamp(280px, 72vw, calc(0.72 * var(--maxw)));
   pointer-events: none;
 
   /* Dot grid. Each tile (background-size) carries one small disc
@@ -219,7 +238,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.2em;
-  animation: marquee 38s linear infinite;
+  animation: marquee 152s linear infinite;
   /* Marquee size tracks the avatar's height so the text always spans
    * from the divider up to the avatar's mid-ear. Lower clamp keeps
    * it impactful on phones; upper clamp prevents runaway scale on
@@ -293,6 +312,13 @@
   grid-template-columns: 1fr 1.35fr;
   gap: 56px;
   align-items: center;
+  /* Featured-project teaser respects the site's editorial max width
+   * even though the hero around it bleeds wider on ultrawide
+   * displays. Keeps the headline + peek aligned with the strips
+   * (FeaturedStrip / NotesStrip) below. */
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
 }
 
 @media (max-width: 1024px) {
