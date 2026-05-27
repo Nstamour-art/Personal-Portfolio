@@ -73,7 +73,12 @@ export function CinematicHero({ project, index, total }: CinematicHeroProps) {
         aria-hidden={videoPlaying || undefined}
       >
         <div className={styles.top}>
-          <Link href="/work" className={styles.back} data-cursor="link">
+          <Link
+            href="/work"
+            className={styles.back}
+            data-cursor="link"
+            data-cursor-label="Back"
+          >
             <span aria-hidden="true">←</span>
             {copy('caseStudy.backLink', 'Back to index')}
           </Link>

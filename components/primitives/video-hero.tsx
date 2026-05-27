@@ -187,6 +187,7 @@ export function VideoHero({
         onClick={() => setPlayingAndNotify(false)}
         aria-label="Stop video"
         data-cursor="link"
+        data-cursor-label="Close"
       >
         ✕
       </button>

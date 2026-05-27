@@ -28,6 +28,11 @@ import styles from './nav-rail.module.css';
  * `inert` when closed so it's invisible to keyboard tab order, screen
  * readers, and pointer events without needing `display: none`
  * (which would block the open/close transition).
+ *
+ * Each NAV entry carries its own `cursorLabel` (defined in
+ * content/disciplines.ts) so the custom cursor pill shows a
+ * personality phrase like "The good stuff" or "Read along" on
+ * hover, instead of falling back to the generic "Proceed" label.
  */
 export function NavRail() {
   const pathname = usePathname();
@@ -102,6 +107,7 @@ export function NavRail() {
                 className={styles.link}
                 href={n.path}
                 data-cursor="link"
+                data-cursor-label={n.cursorLabel}
                 data-active={isActive ? 'true' : 'false'}
                 aria-current={isActive ? 'page' : undefined}
               >
@@ -160,6 +166,8 @@ export function NavRail() {
                 <Link
                   href={n.path}
                   className={styles.overlayLink}
+                  data-cursor="link"
+                  data-cursor-label={n.cursorLabel}
                   data-active={isActive ? 'true' : 'false'}
                   aria-current={isActive ? 'page' : undefined}
                 >
@@ -174,6 +182,8 @@ export function NavRail() {
           <a
             href={`mailto:${SITE.email}`}
             className={styles.overlayContact}
+            data-cursor="link"
+            data-cursor-label="Say hi"
           >
             {SITE.email}
           </a>

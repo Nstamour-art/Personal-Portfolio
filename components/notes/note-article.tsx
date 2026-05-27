@@ -27,7 +27,12 @@ export function NoteArticle({ note }: NoteArticleProps) {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link href="/notes" className={styles.back} data-cursor="link">
+        <Link
+          href="/notes"
+          className={styles.back}
+          data-cursor="link"
+          data-cursor-label="Back"
+        >
           <span aria-hidden="true">←</span> Notes index
         </Link>
         <div className={styles.counter}>

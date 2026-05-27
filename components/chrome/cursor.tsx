@@ -1,110 +1,442 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { useCoarsePointer, useReducedMotion } from '@/lib/hooks/useReducedMotion';
 import styles from './cursor.module.css';
 
 /**
- * Custom blend-mode cursor — SPEC §6.2.
+ * Custom cursor — pointer + leashed label, one unified physics sim.
  *
- * Two fixed elements that follow the pointer with RAF lerps. Reads
- * `data-cursor` and `data-cursor-label` from the closest ancestor of the
- * pointer target to switch state.
+ * Three positional layers, all updated each animation frame:
  *
- * Hidden entirely on coarse pointers and when prefers-reduced-motion: reduce.
- * Mounted high in layout.tsx, alongside `body.cursor-on` which hides the
- * native cursor on interactive surfaces.
+ *   1. `.cursor`  — the cursor itself (an SVG that morphs between a
+ *                   macOS-style filled triangle and a thin I-beam).
+ *                   Tracks the pointer at lerp 0.5 so the visible tip
+ *                   never falls behind enough to feel broken.
+ *
+ *   2. `.leashSvg`— a full-viewport <svg> with a single <path>. The
+ *                   path is a Verlet rope of N nodes with viscous
+ *                   friction — it behaves like a string floating in
+ *                   a thick medium. Node 0 is pinned to the *back*
+ *                   of the chevron (not the tip), so the rope emits
+ *                   from the back of the pointer. The last node is
+ *                   the label.
+ *
+ *   3. `.label`   — a frosted-blur pill rendered at whatever
+ *                   position the last rope node ends up at. It has
+ *                   a soft attractor pulling it toward (cursor +
+ *                   LABEL_OFFSET), which is its rest position. The
+ *                   viscous drag on the interior rope nodes is what
+ *                   makes the pill lag behind the cursor during
+ *                   motion and catch up when the cursor stops.
+ *
+ * States, driven by `data-cursor` on the closest ancestor of the
+ * pointer target plus native text-field detection:
+ *
+ *   - `default`            triangle, no label, no leash.
+ *   - `link` | `view`      triangle scaled 1.5×, label fades in,
+ *                          leash draws to the pill. `view` adds an
+ *                          accent glow.
+ *   - `text`               triangle morphs to an I-beam line, no
+ *                          label, no leash. Forced whenever the
+ *                          pointer is over an editable input, even
+ *                          if the element has no `data-cursor`
+ *                          attribute — future-ready for forms.
+ *   - `active` (mousedown) accent-ring pulse around the cursor tip
+ *                          while held.
+ *
+ * Hidden entirely on coarse pointers, when prefers-reduced-motion:
+ * reduce, and on the /keystatic admin shell (native pointer is
+ * what the CMS expects).
  */
 export function CustomCursor() {
-  const dotRef = useRef<HTMLDivElement | null>(null);
-  const ringRef = useRef<HTMLDivElement | null>(null);
+  const cursorRef = useRef<HTMLDivElement | null>(null);
   const labelRef = useRef<HTMLDivElement | null>(null);
+  const labelTextRef = useRef<HTMLSpanElement | null>(null);
+  const leashPathRef = useRef<SVGPathElement | null>(null);
   const stateRef = useRef<string>('default');
 
   const reduced = useReducedMotion();
   const coarse = useCoarsePointer();
+  const pathname = usePathname();
 
+  const onAdmin = pathname?.startsWith('/keystatic') ?? false;
+
+  /* Hide the native cursor on interactive surfaces (handled by the
+   * `body.cursor-on` rules in globals.css) and seed state attributes
+   * so CSS selectors have something to match before the first
+   * mousemove. Mounted once per eligibility flip. */
   useEffect(() => {
+    if (reduced || coarse || onAdmin) return undefined;
     document.body.classList.add('cursor-on');
+    document.body.dataset['cursorState'] = 'default';
+    document.body.dataset['cursorActive'] = '0';
     return () => {
       document.body.classList.remove('cursor-on');
+      delete document.body.dataset['cursorState'];
+      delete document.body.dataset['cursorActive'];
     };
-  }, []);
+  }, [reduced, coarse, onAdmin]);
 
+  /* RAF loop owns all positional state. Refs are written every
+   * frame; React state would re-render 60×/sec, which is the kind of
+   * thing that kills cursor budgets. */
   useEffect(() => {
-    if (reduced || coarse) return;
+    if (reduced || coarse || onAdmin) return undefined;
 
+    /* mx/my — the actual pointer (truth)
+     * cx/cy — cursor's smoothed position (lerp toward mx/my) */
     let mx = window.innerWidth / 2;
     let my = window.innerHeight / 2;
-    let rx = mx;
-    let ry = my;
-    let dx = mx;
-    let dy = my;
+    let cx = mx;
+    let cy = my;
     let raf = 0;
 
+    /* Chevron back — the point on the cursor SVG where the leash
+     * emits from. Coordinates are in the cursor element's local
+     * space (origin = chevron tip / pointer hot spot, which is
+     * (0,0)). The chevron path runs M0 0 L13 9 L7 11 L4 17 Z, so
+     * (8, 13) sits roughly at the back of the chevron's tail —
+     * opposite the pointer tip, which is where a leash would
+     * naturally tie on. */
+    const CHEVRON_BACK_X = 8;
+    const CHEVRON_BACK_Y = 13;
+
+    /* Label rest position relative to the cursor's hot tip — the
+     * label's top-left corner sits here when everything has
+     * settled. Pulled in slightly from the older 36×44 because
+     * the unified sim doesn't need the visual gap that the
+     * separate spring required for the rope to read. */
+    const LABEL_DX = 32;
+    const LABEL_DY = 34;
+
+    /* ─── UNIFIED ROPE + LABEL PHYSICS ─────────────────────────
+     *
+     * The label DIV is rendered at the position of the LAST rope
+     * node. There is no separate label spring — the rope's chain
+     * of nodes IS the label's tether, with its own viscous
+     * friction acting as a thick medium that drags the label
+     * around when the cursor moves.
+     *
+     *   ROPE_NODES     point count (14 = smooth curve).
+     *   ROPE_GRAVITY   a small downward bias so the rope curves
+     *                  organically instead of looking like a wire.
+     *                  Kept tiny (0.04) so it doesn't read as
+     *                  "hanging".
+     *   ROPE_FRICTION  viscosity coefficient. 0.18 makes the
+     *                  medium feel like honey — interior nodes
+     *                  resist motion strongly, which is what
+     *                  produces the dragged-through-liquid feel.
+     *   ROPE_ITERS     constraint relaxation passes per frame.
+     *   ROPE_SLACK     segment length × this vs the straight-line
+     *                  rest distance. 1.06 = enough slack for the
+     *                  rope to curve during drag, not so much that
+     *                  it hangs visibly slack at rest.
+     *   LAST_NODE_PULL strength of the soft attractor on the
+     *                  label (= last node) toward its rest
+     *                  position. Low = label lingers behind the
+     *                  cursor longer before catching up; high =
+     *                  snaps back fast. */
+    const ROPE_NODES = 14;
+    const ROPE_GRAVITY = 0.04;
+    const ROPE_FRICTION = 0.18;
+    const ROPE_ITERS = 6;
+    const ROPE_SLACK = 1.06;
+    const LAST_NODE_PULL = 0.1;
+
+    interface RopeNode {
+      x: number;
+      y: number;
+      px: number;
+      py: number;
+    }
+
+    /* Seed nodes evenly along the chevron-back → label-rest
+     * vector so the first frame is already in a sensible shape. */
+    const rope: RopeNode[] = [];
+    {
+      const sx = mx + CHEVRON_BACK_X;
+      const sy = my + CHEVRON_BACK_Y;
+      const ex = mx + LABEL_DX;
+      const ey = my + LABEL_DY;
+      for (let i = 0; i < ROPE_NODES; i++) {
+        const t = i / (ROPE_NODES - 1);
+        const x = sx + t * (ex - sx);
+        const y = sy + t * (ey - sy);
+        rope.push({ x, y, px: x, py: y });
+      }
+    }
+
+    /* Constant segment length — the rope's natural rest length is
+     * fixed (straight-line distance from chevron back to label
+     * rest × slack). The constraint chain enforces this each
+     * frame, so the rope can curve and twist but can't lengthen
+     * or shorten. That makes the chain feel like an actual
+     * physical object rather than a stretchy rubber band. */
+    const restRopeLen = Math.sqrt(
+      (LABEL_DX - CHEVRON_BACK_X) ** 2 + (LABEL_DY - CHEVRON_BACK_Y) ** 2,
+    );
+    const SEG_LEN = (restRopeLen * ROPE_SLACK) / (ROPE_NODES - 1);
+
+    /* Pointer source of truth + state derivation. Text-field
+     * detection runs regardless of data-cursor so inputs always
+     * win, even on a wrapping link. */
     const onMove = (e: MouseEvent) => {
       mx = e.clientX;
       my = e.clientY;
+
       const target = e.target as Element | null;
-      const el = target?.closest?.('[data-cursor]') as HTMLElement | null;
-      const next = el?.dataset['cursor'] ?? 'default';
-      const label = el?.dataset['cursorLabel'] ?? '';
+      let next: string;
+      let label = '';
+
+      if (isEditable(target)) {
+        next = 'text';
+      } else {
+        const el = target?.closest?.('[data-cursor]') as HTMLElement | null;
+        next = el?.dataset['cursor'] ?? 'default';
+        label = el?.dataset['cursorLabel'] ?? '';
+        /* Universal fallbacks for labelled states with no explicit
+         * `data-cursor-label`. We use full words rather than glyphs
+         * so the pill reads as "do a thing" instead of decoration:
+         *   link → "Proceed"  (clickthrough to another page/action)
+         *   view → "View"     (look at content in place)
+         * Main nav tabs supply their own personality labels via
+         * NAV.cursorLabel in content/disciplines.ts; those win. */
+        if (next !== 'default' && next !== 'text' && !label) {
+          label = next === 'view' ? 'View' : 'Proceed';
+        }
+      }
+
       if (stateRef.current !== next) {
         stateRef.current = next;
-        if (ringRef.current) ringRef.current.dataset['state'] = next;
+        /* Single source of truth for state — all three rendered
+         * elements (cursor / label / leash) read this via CSS
+         * selectors on body[data-cursor-state]. Beats juggling
+         * three refs in lock-step. */
+        document.body.dataset['cursorState'] = next;
       }
-      if (labelRef.current) {
-        labelRef.current.textContent = label;
-        labelRef.current.dataset['show'] = label ? '1' : '0';
+      if (labelTextRef.current && labelTextRef.current.textContent !== label) {
+        labelTextRef.current.textContent = label;
       }
+    };
+
+    const onDown = () => {
+      const s = stateRef.current;
+      if (s === 'link' || s === 'view') {
+        document.body.dataset['cursorActive'] = '1';
+      }
+    };
+    const onUp = () => {
+      document.body.dataset['cursorActive'] = '0';
     };
 
     const hide = () => {
-      if (dotRef.current) dotRef.current.style.opacity = '0';
-      if (ringRef.current) ringRef.current.style.opacity = '0';
+      cursorRef.current?.style.setProperty('opacity', '0');
+      labelRef.current?.style.setProperty('opacity', '0');
     };
     const show = () => {
-      if (dotRef.current) dotRef.current.style.opacity = '1';
-      if (ringRef.current) ringRef.current.style.opacity = '1';
+      cursorRef.current?.style.removeProperty('opacity');
+      labelRef.current?.style.removeProperty('opacity');
     };
 
     const loop = () => {
-      rx += (mx - rx) * 0.18;
-      ry += (my - ry) * 0.18;
-      dx += (mx - dx) * 0.55;
-      dy += (my - dy) * 0.55;
-      if (ringRef.current) {
-        ringRef.current.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
+      /* Cursor: simple lerp toward the pointer. 0.5 is tight
+       * enough to feel immediate without the jitter of 1:1. */
+      cx += (mx - cx) * 0.5;
+      cy += (my - cy) * 0.5;
+
+      /* ─── UNIFIED ROPE + LABEL STEP ──────────────────────────
+       *
+       * 1. Verlet on every movable node (1 … N-1, including the
+       *    last node which is the label). Friction bleeds off
+       *    most of the velocity each frame — that's the "viscous
+       *    medium" feel. Tiny gravity keeps the chain from looking
+       *    mechanical. */
+      for (let i = 1; i < ROPE_NODES; i++) {
+        const p = rope[i]!;
+        const vx = (p.x - p.px) * (1 - ROPE_FRICTION);
+        const vy = (p.y - p.py) * (1 - ROPE_FRICTION);
+        p.px = p.x;
+        p.py = p.y;
+        p.x += vx;
+        p.y += vy + ROPE_GRAVITY;
       }
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+
+      /* 2. Soft attractor on the last node toward its rest
+       *    position relative to the cursor. This is the only
+       *    thing telling the label where it "wants" to be —
+       *    without it, the chain would just drift wherever the
+       *    last constraint pass happened to put it. */
+      const last = rope[ROPE_NODES - 1]!;
+      const restX = cx + LABEL_DX;
+      const restY = cy + LABEL_DY;
+      last.x += (restX - last.x) * LAST_NODE_PULL;
+      last.y += (restY - last.y) * LAST_NODE_PULL;
+
+      /* 3. Pin node 0 to the back of the chevron — the rope
+       *    visibly emits from there on the pointer. */
+      rope[0]!.x = cx + CHEVRON_BACK_X;
+      rope[0]!.y = cy + CHEVRON_BACK_Y;
+
+      /* 4. Distance constraint relaxation (Jakobsen). Only node 0
+       *    is fully fixed — every other node moves, including the
+       *    last. When the cursor jumps, the constraint chain
+       *    transports the displacement down the rope toward the
+       *    label; combined with viscous friction this gives the
+       *    "thick medium dragging the pill" feel. */
+      for (let iter = 0; iter < ROPE_ITERS; iter++) {
+        for (let i = 0; i < ROPE_NODES - 1; i++) {
+          const a = rope[i]!;
+          const b = rope[i + 1]!;
+          const sdx = b.x - a.x;
+          const sdy = b.y - a.y;
+          const sd = Math.sqrt(sdx * sdx + sdy * sdy) || 1e-4;
+          const diff = (sd - SEG_LEN) / sd;
+          const ox = sdx * 0.5 * diff;
+          const oy = sdy * 0.5 * diff;
+
+          if (i === 0) {
+            /* Node 0 is pinned; node 1 takes the full correction. */
+            b.x -= ox * 2;
+            b.y -= oy * 2;
+          } else {
+            a.x += ox;
+            a.y += oy;
+            b.x -= ox;
+            b.y -= oy;
+          }
+        }
       }
-      if (labelRef.current) {
-        labelRef.current.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`;
+
+      /* 5. Render — cursor at pointer, label at the last rope
+       *    node (the label IS the end of the rope), rope as a
+       *    polyline through every node. */
+      const cursor = cursorRef.current;
+      if (cursor) {
+        cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
       }
+      const label = labelRef.current;
+      if (label) {
+        const lx = rope[ROPE_NODES - 1]!.x;
+        const ly = rope[ROPE_NODES - 1]!.y;
+        label.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
+      }
+      const leash = leashPathRef.current;
+      if (leash) {
+        let d = `M${rope[0]!.x.toFixed(1)} ${rope[0]!.y.toFixed(1)}`;
+        for (let i = 1; i < ROPE_NODES; i++) {
+          d += ` L${rope[i]!.x.toFixed(1)} ${rope[i]!.y.toFixed(1)}`;
+        }
+        leash.setAttribute('d', d);
+      }
+
       raf = requestAnimationFrame(loop);
     };
 
     window.addEventListener('mousemove', onMove);
+    window.addEventListener('mousedown', onDown);
+    window.addEventListener('mouseup', onUp);
     document.addEventListener('mouseleave', hide);
     document.addEventListener('mouseenter', show);
     raf = requestAnimationFrame(loop);
 
     return () => {
       window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('mouseup', onUp);
       document.removeEventListener('mouseleave', hide);
       document.removeEventListener('mouseenter', show);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [reduced, coarse]);
+  }, [reduced, coarse, onAdmin]);
 
-  if (reduced || coarse) return null;
+  if (reduced || coarse || onAdmin) return null;
 
   return (
     <>
-      <div ref={ringRef} className={styles.ring} data-state="default" aria-hidden="true" />
-      <div ref={dotRef} className={styles.dot} aria-hidden="true" />
-      <div ref={labelRef} className={styles.label} data-show="0" aria-hidden="true" />
+      {/* Leash overlay — full-viewport SVG with a rope <path>.
+       *   pointer-events: none lets all events fall through.
+       *   z-index sits just under .cursor / .label so it paints
+       *   behind both. The `d` attribute is rewritten every frame
+       *   by the RAF loop with a polyline through the rope nodes. */}
+      <svg
+        className={styles.leashSvg}
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path ref={leashPathRef} className={styles.leashPath} d="" />
+      </svg>
+
+      {/* Cursor — triangle (default/link/view/active) or I-beam (text). */}
+      <div
+        ref={cursorRef}
+        className={styles.cursor}
+        aria-hidden="true"
+        style={{ transform: 'translate3d(-100px, -100px, 0)' }}
+      >
+        {/* Triangle: filled, hot tip at the actual pointer origin. */}
+        <svg
+          className={styles.triangle}
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M0 0 L13 9 L7 11 L4 17 Z" />
+        </svg>
+        {/* I-beam: thin vertical line + serifs, fades in over text inputs. */}
+        <svg
+          className={styles.ibeam}
+          width="14"
+          height="22"
+          viewBox="0 0 14 22"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M7 2 V20 M3 2 H11 M3 20 H11" />
+        </svg>
+        {/* Active-state pulse ring. CSS handles the keyframe; this
+         * element exists so the pulse can be its own paint. */}
+        <span className={styles.pulse} aria-hidden="true" />
+      </div>
+
+      {/* Label pill — leashed to the cursor by the SVG line above. */}
+      <div
+        ref={labelRef}
+        className={styles.label}
+        aria-hidden="true"
+        style={{ transform: 'translate3d(-100px, -100px, 0)' }}
+      >
+        <span ref={labelTextRef} className={styles.labelText} />
+      </div>
     </>
   );
+}
+
+/* True when the pointer target is an editable surface — drives the
+ * I-beam morph. Conservative: read-only inputs and inputs that
+ * aren't text-y (range/checkbox/etc.) shouldn't trigger it. */
+function isEditable(target: Element | null): boolean {
+  if (!target) return false;
+  if (target instanceof HTMLInputElement) {
+    if (target.readOnly || target.disabled) return false;
+    const t = (target.type || '').toLowerCase();
+    return (
+      t === '' ||
+      t === 'text' ||
+      t === 'search' ||
+      t === 'email' ||
+      t === 'url' ||
+      t === 'tel' ||
+      t === 'password' ||
+      t === 'number'
+    );
+  }
+  if (target instanceof HTMLTextAreaElement) {
+    return !target.readOnly && !target.disabled;
+  }
+  if (target instanceof HTMLElement && target.isContentEditable) {
+    return true;
+  }
+  return false;
 }

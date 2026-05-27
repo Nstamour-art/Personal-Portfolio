@@ -23,7 +23,7 @@ export function Footer() {
           href={`mailto:${SITE.email}`}
           className={styles.btn}
           data-cursor="link"
-          data-cursor-label="Write"
+          data-cursor-label="Say hi"
         >
           {SITE.email}
           <span className={styles.arr} aria-hidden="true">
@@ -37,7 +37,7 @@ export function Footer() {
         <ul>
           {NAV.map((n) => (
             <li key={n.id}>
-              <Link href={n.path} data-cursor="link">
+              <Link href={n.path} data-cursor="link" data-cursor-label={n.cursorLabel}>
                 {n.label}
               </Link>
             </li>

@@ -8,6 +8,7 @@ export function ContactLinks() {
         href={`mailto:${SITE.email}`}
         className={styles.link}
         data-cursor="link"
+        data-cursor-label="Say hi"
       >
         <div className={styles.k}>Email</div>
         <div className={styles.v}>{SITE.email}</div>
@@ -21,6 +22,7 @@ export function ContactLinks() {
             href={s.href}
             className={styles.link}
             data-cursor="link"
+            data-cursor-label={s.handle}
             target={isExternal ? '_blank' : undefined}
             rel={isExternal ? 'noopener noreferrer' : undefined}
           >

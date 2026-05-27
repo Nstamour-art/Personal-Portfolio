@@ -13,7 +13,7 @@ export function BigEmail() {
           href={`mailto:${SITE.email}`}
           className={styles.link}
           data-cursor="link"
-          data-cursor-label="Write"
+          data-cursor-label="Say hi"
         >
           {SITE.email}
         </a>
