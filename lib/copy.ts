@@ -10,7 +10,7 @@ type CopyValue = Primitive | Primitive[] | Record<string, unknown>;
  * future CMS payloads can substitute strings without touching components.
  *
  *   copy('home.featuredTitle', 'Recent projects')
- *   copy('about.aboutParagraphs', [])
+ *   copy('about.practiceLines', [])
  */
 export function copy<T extends CopyValue>(path: string, fallback: T): T {
   const parts = String(path).split('.');

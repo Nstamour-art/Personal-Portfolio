@@ -126,7 +126,7 @@ export default config({
      *  Site   → site-wide configuration */
     navigation: {
       Write: ['projects', 'notes', 'editorial'],
-      You: ['site', 'experience', 'skills'],
+      You: ['site', 'experience', 'education', 'awards', 'skills'],
       Site: ['announcement', 'theme'],
     },
   },
@@ -661,27 +661,45 @@ export default config({
 
         about: fields.object(
           {
-            eyebrow: fields.text({ label: 'Tag above the /studio page title' }),
-            headline: fields.text({ label: 'Page headline', multiline: true }),
-            practiceLabel: fields.text({ label: '"Practice" column heading' }),
-            practiceLines: fields.array(fields.text({ label: 'Line' }), {
-              label: '"Practice" column lines',
+            eyebrow: fields.text({
+              label: 'Tag above the /studio page title',
             }),
-            aboutLabel: fields.text({ label: '"About" column heading' }),
-            aboutParagraphs: fields.array(
-              fields.text({ label: 'Paragraph', multiline: true }),
-              {
-                label: '"About" column paragraphs',
-                description:
-                  'Supports **bold** and *italic accent* spans for inline emphasis.',
-              },
-            ),
-            experienceEyebrow: fields.text({ label: '"Experience" section tag' }),
+            headline: fields.text({
+              label: 'Page headline',
+              multiline: true,
+            }),
+            summary: fields.text({
+              label: 'Professional summary (2–3 sentences)',
+              description:
+                'Top-of-CV intro paragraph. Plain text — supports **bold** and *italic accent* for inline emphasis.',
+              multiline: true,
+            }),
+            practiceLabel: fields.text({
+              label: 'CV sidebar — "What I bring" heading',
+              description:
+                'Heading above the bring-block in the right sidebar. Defaults to "What I bring".',
+            }),
+            practiceLines: fields.array(fields.text({ label: 'Line' }), {
+              label: 'CV sidebar — "What I bring" lines',
+              description:
+                'Each line becomes a bullet in the right sidebar. 3–6 lines reads cleanest.',
+            }),
+            experienceEyebrow: fields.text({
+              label: '"Experience" section tag',
+            }),
             experienceHeadline: fields.text({
               label: '"Experience" section headline',
             }),
+            educationEyebrow: fields.text({
+              label: '"Education" section tag',
+              description: 'Defaults to "Education".',
+            }),
+            awardsEyebrow: fields.text({
+              label: '"Awards & press" section tag',
+              description: 'Defaults to "Awards & press".',
+            }),
           },
-          { label: 'Studio page' },
+          { label: 'Studio page (CV)' },
         ),
 
         contact: fields.object(
@@ -788,6 +806,81 @@ export default config({
           {
             label: 'Skill groups',
             itemLabel: (props) => props.fields.h.value || 'Group',
+          },
+        ),
+      },
+    }),
+
+    /* EDUCATION — appears in the /studio CV's main column. */
+    education: singleton({
+      label: 'Education',
+      path: 'data/education',
+      format: 'json',
+      schema: {
+        rows: fields.array(
+          fields.object({
+            year: fields.text({
+              label: 'Year (or range)',
+              description: 'e.g. "2018—2022" or "2020".',
+              validation: { isRequired: true, length: { min: 1 } },
+            }),
+            school: fields.text({
+              label: 'School / institution',
+              validation: { isRequired: true, length: { min: 1 } },
+            }),
+            programme: fields.text({
+              label: 'Programme / degree',
+              description: 'e.g. "BFA, Graphic Design" or "Diploma, Animation".',
+              validation: { isRequired: true, length: { min: 1 } },
+            }),
+            note: fields.text({
+              label: 'Note (optional)',
+              description: 'Short context line, e.g. "Honours · Dean\'s list".',
+            }),
+          }),
+          {
+            label: 'Education entries',
+            itemLabel: (p) =>
+              `${p.fields.year.value} — ${p.fields.school.value}` || 'Row',
+          },
+        ),
+      },
+    }),
+
+    /* AWARDS & PRESS — appears in the /studio CV's main column. */
+    awards: singleton({
+      label: 'Awards & press',
+      path: 'data/awards',
+      format: 'json',
+      schema: {
+        rows: fields.array(
+          fields.object({
+            year: fields.text({
+              label: 'Year',
+              description: 'e.g. "2025".',
+              validation: { isRequired: true, length: { min: 1 } },
+            }),
+            title: fields.text({
+              label: 'Title',
+              description:
+                'Award name or article title (e.g. "Best in Motion 2024" or "Interview — It\'s Nice That").',
+              validation: { isRequired: true, length: { min: 1 } },
+            }),
+            source: fields.text({
+              label: 'Source / organisation',
+              description: 'e.g. "AIGA", "The Webby Awards", "It\'s Nice That".',
+              validation: { isRequired: true, length: { min: 1 } },
+            }),
+            href: fields.text({
+              label: 'Link (optional)',
+              description:
+                'Full URL. When set, the entry becomes a link that opens in a new tab.',
+            }),
+          }),
+          {
+            label: 'Awards & press entries',
+            itemLabel: (p) =>
+              `${p.fields.year.value} — ${p.fields.title.value}` || 'Row',
           },
         ),
       },

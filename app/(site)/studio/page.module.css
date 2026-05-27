@@ -1,23 +1,56 @@
 .page {
-  padding: 140px var(--pad) 80px;
+  padding: 140px var(--pad) 96px;
   max-width: var(--maxw);
   margin: 0 auto;
 }
 
-.head {
-  margin-bottom: 96px;
+.cv {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(260px, 1fr);
+  gap: clamp(48px, 6vw, 96px);
+  margin-top: clamp(48px, 6vw, 72px);
 }
 
-.headline {
-  margin-top: 16px;
-  max-width: 18ch;
+@media (max-width: 880px) {
+  .cv {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
 }
 
-.expHead {
-  margin-bottom: 24px;
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(56px, 7vw, 88px);
 }
 
-.expHeadline {
-  margin-top: 8px;
-  margin-bottom: 32px;
+.aside {
+  /* Sticky on desktop so the contact/skills reference stays visible
+   * while scrolling through experience. Sticks naturally; if the
+   * sidebar is taller than the viewport, the bottom scrolls with
+   * the page like a static element — fine. */
+  position: sticky;
+  top: 120px;
+  align-self: start;
+}
+
+@media (max-width: 880px) {
+  .aside {
+    position: static;
+  }
+}
+
+.summary {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--fg);
+  max-width: 56ch;
+}
+
+.summary p {
+  margin: 0 0 14px;
+}
+
+.summary p:last-child {
+  margin-bottom: 0;
 }

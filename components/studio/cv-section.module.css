@@ -1,0 +1,29 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.eyebrow {
+  color: var(--muted);
+}
+
+.headline {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--fg-2);
+  max-width: 52ch;
+  font-family: var(--mono);
+  letter-spacing: 0.01em;
+}
+
+.body {
+  display: block;
+}

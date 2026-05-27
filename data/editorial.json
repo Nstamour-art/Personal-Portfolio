@@ -38,16 +38,13 @@
   "about": {
     "eyebrow": "Studio of one — Montréal · remote",
     "headline": "A motion artist who fell in love with systems.",
-    "practiceLabel": "Practice",
+    "summary": "I design in motion and build with systems. The last five years have been broadcast graphics, 3D animation and identity work — the kind of projects where the rig matters as much as the frame. Since **2024** roughly half of my time has been on AI workflows: same instinct, different surface — figure out what the system wants to do, build the rig that lets it do it, then make it *look* like it was always supposed to feel that way.",
+    "practiceLabel": "What I bring",
     "practiceLines": ["EST. 2021", "Independent practice", "Selective collaborations"],
-    "aboutLabel": "About",
-    "aboutParagraphs": [
-      "I design in motion and build with systems. Most of the last five years have been spent on broadcast graphics, 3D animation and identity work — the kind of projects where the rig matters as much as the frame.",
-      "In **2024** I started spending half my time on AI workflows. Same instinct, different surface: figure out what the system wants to do, build the rig that lets it do it, then make it *look* like it was always supposed to feel that way. The output is sometimes a render, sometimes a prompt graph, sometimes a small product.",
-      "My favourite work sits at the join. A title sequence that's also a templated rig. A worldbuilding project that's also a design system. An underwriting prototype that's also a piece of motion. If you have a brief that lives in two disciplines, I'd like to read it."
-    ],
     "experienceEyebrow": "Experience",
-    "experienceHeadline": "Selected projects, in order of recency."
+    "experienceHeadline": "Selected projects, in order of recency.",
+    "educationEyebrow": "Education",
+    "awardsEyebrow": "Awards & press"
   },
   "contact": {
     "eyebrow": "Get in touch — usually replies same week",
