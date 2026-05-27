@@ -6,7 +6,7 @@ import { useCoarsePointer, useReducedMotion } from '@/lib/hooks/useReducedMotion
 import styles from './cursor.module.css';
 
 /**
- * Custom cursor — pointer + leashed label.
+ * Custom cursor — pointer + leashed label, one unified physics sim.
  *
  * Three positional layers, all updated each animation frame:
  *
@@ -15,17 +15,21 @@ import styles from './cursor.module.css';
  *                   Tracks the pointer at lerp 0.5 so the visible tip
  *                   never falls behind enough to feel broken.
  *
- *   2. `.label`   — a frosted-blur pill carrying the contextual label
- *                   from `data-cursor-label`. Sits below-right of the
- *                   cursor with springy physics: visible overshoot
- *                   when the cursor stops, calibrated tight enough
- *                   that fast drags don't strand it off-screen.
+ *   2. `.leashSvg`— a full-viewport <svg> with a single <path>. The
+ *                   path is a Verlet rope of N nodes with viscous
+ *                   friction — it behaves like a string floating in
+ *                   a thick medium. Node 0 is pinned to the *back*
+ *                   of the chevron (not the tip), so the rope emits
+ *                   from the back of the pointer. The last node is
+ *                   the label.
  *
- *   3. `.leashSvg`— a full-viewport <svg> with a single <line> from
- *                   the cursor's centre to the pill's top-left corner
- *                   (which stays sharp; the other three corners are
- *                   rounded). Redrawn every frame against both
- *                   endpoints. Fades in/out with the label.
+ *   3. `.label`   — a frosted-blur pill rendered at whatever
+ *                   position the last rope node ends up at. It has
+ *                   a soft attractor pulling it toward (cursor +
+ *                   LABEL_OFFSET), which is its rest position. The
+ *                   viscous drag on the interior rope nodes is what
+ *                   makes the pill lag behind the cursor during
+ *                   motion and catch up when the cursor stops.
  *
  * States, driven by `data-cursor` on the closest ancestor of the
  * pointer target plus native text-field detection:
@@ -81,71 +85,65 @@ export function CustomCursor() {
   useEffect(() => {
     if (reduced || coarse || onAdmin) return undefined;
 
-    /* mx/my  — the actual pointer (truth)
-     * cx/cy  — cursor's smoothed position (lerp toward mx/my)
-     * lx/ly  — label's spring-following position
-     * lvx/lvy — label's velocity vector for the spring */
+    /* mx/my — the actual pointer (truth)
+     * cx/cy — cursor's smoothed position (lerp toward mx/my) */
     let mx = window.innerWidth / 2;
     let my = window.innerHeight / 2;
     let cx = mx;
     let cy = my;
-    let lx = mx;
-    let ly = my;
-    let lvx = 0;
-    let lvy = 0;
     let raf = 0;
 
-    /* Label is offset down-right of the cursor; spring chases this
-     * moving target. Rest-state offset = leash length at rest.
-     * Doubled from the first pass so the cursor → label
-     * relationship reads more dramatically. */
-    const LABEL_DX = 36;
-    const LABEL_DY = 44;
+    /* Chevron back — the point on the cursor SVG where the leash
+     * emits from. Coordinates are in the cursor element's local
+     * space (origin = chevron tip / pointer hot spot, which is
+     * (0,0)). The chevron path runs M0 0 L13 9 L7 11 L4 17 Z, so
+     * (8, 13) sits roughly at the back of the chevron's tail —
+     * opposite the pointer tip, which is where a leash would
+     * naturally tie on. */
+    const CHEVRON_BACK_X = 8;
+    const CHEVRON_BACK_Y = 13;
 
-    /* Spring constants. Stiffness K = spring force per unit of
-     * offset; damping D = velocity carryover per frame (closer to
-     * 1 = less damping = more overshoot).
-     *
-     *  - K=0.05 (almost halved again from 0.09) → label clearly
-     *    drags behind the cursor during continuous movement; you
-     *    can see the rope going taut as the pill catches up.
-     *  - D=0.86 (less damping than 0.82) → more velocity survives
-     *    each frame so the pill keeps moving briefly after the
-     *    cursor stops, then bobs into place.
-     *
-     * Net effect: the pill feels physically dragged on a rope.
-     * Fast cursor flicks leave the pill lagging behind by a
-     * noticeable beat; stops produce a clear follow-through and
-     * settle. */
-    const K = 0.05;
-    const D = 0.86;
+    /* Label rest position relative to the cursor's hot tip — the
+     * label's top-left corner sits here when everything has
+     * settled. Pulled in slightly from the older 36×44 because
+     * the unified sim doesn't need the visual gap that the
+     * separate spring required for the rope to read. */
+    const LABEL_DX = 32;
+    const LABEL_DY = 34;
 
-    /* Rope simulation — the leash isn't a straight line, it's a
-     * chain of N nodes joined by distance constraints. Verlet
-     * integration on the interior nodes gives them inertia + a
-     * downward gravity bias; the endpoints get pinned to the
-     * cursor and the label each frame.
+    /* ─── UNIFIED ROPE + LABEL PHYSICS ─────────────────────────
      *
-     *  ROPE_NODES         — point count. 14 is dense enough that
-     *                       the rendered polyline reads as a curve.
-     *  ROPE_GRAVITY       — downward acceleration per frame. Higher
-     *                       = the rope sags more.
-     *  ROPE_FRICTION      — fraction of velocity bled off per
-     *                       frame. Lower = more swing/wobble.
-     *  ROPE_ITERS         — constraint relaxation passes. Higher =
-     *                       stiffer rope (no stretch); lower = the
-     *                       rope can elongate temporarily on sharp
-     *                       cursor jerks, which actually looks
-     *                       great.
-     *  ROPE_SLACK         — extra length factor vs. straight-line
-     *                       cursor-to-label distance. 1.12 = 12%
-     *                       extra rope so it visibly bows even at
-     *                       rest. */
+     * The label DIV is rendered at the position of the LAST rope
+     * node. There is no separate label spring — the rope's chain
+     * of nodes IS the label's tether, with its own viscous
+     * friction acting as a thick medium that drags the label
+     * around when the cursor moves.
+     *
+     *   ROPE_NODES     point count (14 = smooth curve).
+     *   ROPE_GRAVITY   a small downward bias so the rope curves
+     *                  organically instead of looking like a wire.
+     *                  Kept tiny (0.04) so it doesn't read as
+     *                  "hanging".
+     *   ROPE_FRICTION  viscosity coefficient. 0.18 makes the
+     *                  medium feel like honey — interior nodes
+     *                  resist motion strongly, which is what
+     *                  produces the dragged-through-liquid feel.
+     *   ROPE_ITERS     constraint relaxation passes per frame.
+     *   ROPE_SLACK     segment length × this vs the straight-line
+     *                  rest distance. 1.06 = enough slack for the
+     *                  rope to curve during drag, not so much that
+     *                  it hangs visibly slack at rest.
+     *   LAST_NODE_PULL strength of the soft attractor on the
+     *                  label (= last node) toward its rest
+     *                  position. Low = label lingers behind the
+     *                  cursor longer before catching up; high =
+     *                  snaps back fast. */
     const ROPE_NODES = 14;
-    const ROPE_GRAVITY = 0.35;
-    const ROPE_FRICTION = 0.04;
+    const ROPE_GRAVITY = 0.04;
+    const ROPE_FRICTION = 0.18;
     const ROPE_ITERS = 6;
-    const ROPE_SLACK = 1.12;
+    const ROPE_SLACK = 1.06;
+    const LAST_NODE_PULL = 0.1;
 
     interface RopeNode {
       x: number;
@@ -153,16 +151,33 @@ export function CustomCursor() {
       px: number;
       py: number;
     }
-    /* Seed nodes evenly along the cursor → label vector so the
-     * very first frame already has a sensible shape (no points
-     * stacked at origin and then snapping out). */
+
+    /* Seed nodes evenly along the chevron-back → label-rest
+     * vector so the first frame is already in a sensible shape. */
     const rope: RopeNode[] = [];
-    for (let i = 0; i < ROPE_NODES; i++) {
-      const t = i / (ROPE_NODES - 1);
-      const x = mx + t * LABEL_DX;
-      const y = my + t * LABEL_DY;
-      rope.push({ x, y, px: x, py: y });
+    {
+      const sx = mx + CHEVRON_BACK_X;
+      const sy = my + CHEVRON_BACK_Y;
+      const ex = mx + LABEL_DX;
+      const ey = my + LABEL_DY;
+      for (let i = 0; i < ROPE_NODES; i++) {
+        const t = i / (ROPE_NODES - 1);
+        const x = sx + t * (ex - sx);
+        const y = sy + t * (ey - sy);
+        rope.push({ x, y, px: x, py: y });
+      }
     }
+
+    /* Constant segment length — the rope's natural rest length is
+     * fixed (straight-line distance from chevron back to label
+     * rest × slack). The constraint chain enforces this each
+     * frame, so the rope can curve and twist but can't lengthen
+     * or shorten. That makes the chain feel like an actual
+     * physical object rather than a stretchy rubber band. */
+    const restRopeLen = Math.sqrt(
+      (LABEL_DX - CHEVRON_BACK_X) ** 2 + (LABEL_DY - CHEVRON_BACK_Y) ** 2,
+    );
+    const SEG_LEN = (restRopeLen * ROPE_SLACK) / (ROPE_NODES - 1);
 
     /* Pointer source of truth + state derivation. Text-field
      * detection runs regardless of data-cursor so inputs always
@@ -226,36 +241,19 @@ export function CustomCursor() {
     };
 
     const loop = () => {
-      /* Cursor: simple lerp toward the pointer. 0.5 is tight enough
-       * to feel immediate without the jitter of 1:1. */
+      /* Cursor: simple lerp toward the pointer. 0.5 is tight
+       * enough to feel immediate without the jitter of 1:1. */
       cx += (mx - cx) * 0.5;
       cy += (my - cy) * 0.5;
 
-      /* Label target = cursor position offset down-right. */
-      const targetX = cx + LABEL_DX;
-      const targetY = cy + LABEL_DY;
-
-      /* Spring step: F = -K * (lx - targetX), then velocity *= D. */
-      lvx += (targetX - lx) * K;
-      lvy += (targetY - ly) * K;
-      lvx *= D;
-      lvy *= D;
-      lx += lvx;
-      ly += lvy;
-
-      const cursor = cursorRef.current;
-      if (cursor) {
-        cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
-      }
-      const label = labelRef.current;
-      if (label) {
-        label.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
-      }
-
-      /* ─── ROPE STEP ───────────────────────────────────────────
-       * 1. Verlet on interior nodes — implicit velocity = current −
-       *    previous; we bleed off friction and add gravity. */
-      for (let i = 1; i < ROPE_NODES - 1; i++) {
+      /* ─── UNIFIED ROPE + LABEL STEP ──────────────────────────
+       *
+       * 1. Verlet on every movable node (1 … N-1, including the
+       *    last node which is the label). Friction bleeds off
+       *    most of the velocity each frame — that's the "viscous
+       *    medium" feel. Tiny gravity keeps the chain from looking
+       *    mechanical. */
+      for (let i = 1; i < ROPE_NODES; i++) {
         const p = rope[i]!;
         const vx = (p.x - p.px) * (1 - ROPE_FRICTION);
         const vy = (p.y - p.py) * (1 - ROPE_FRICTION);
@@ -265,27 +263,28 @@ export function CustomCursor() {
         p.y += vy + ROPE_GRAVITY;
       }
 
-      /* 2. Pin endpoints to the cursor and to the label's top-left
-       *    (which is the label element's own translate origin). */
-      rope[0]!.x = cx;
-      rope[0]!.y = cy;
-      rope[ROPE_NODES - 1]!.x = lx;
-      rope[ROPE_NODES - 1]!.y = ly;
+      /* 2. Soft attractor on the last node toward its rest
+       *    position relative to the cursor. This is the only
+       *    thing telling the label where it "wants" to be —
+       *    without it, the chain would just drift wherever the
+       *    last constraint pass happened to put it. */
+      const last = rope[ROPE_NODES - 1]!;
+      const restX = cx + LABEL_DX;
+      const restY = cy + LABEL_DY;
+      last.x += (restX - last.x) * LAST_NODE_PULL;
+      last.y += (restY - last.y) * LAST_NODE_PULL;
 
-      /* 3. Segment length adapts to the live cursor↔label
-       *    distance × slack, so the rope always has visible bow.
-       *    Floor at 6px so the rope doesn't collapse when the
-       *    label catches up exactly. */
-      const ropeDx = lx - cx;
-      const ropeDy = ly - cy;
-      const directDist = Math.sqrt(ropeDx * ropeDx + ropeDy * ropeDy);
-      const segLen = Math.max(6, (directDist * ROPE_SLACK) / (ROPE_NODES - 1));
+      /* 3. Pin node 0 to the back of the chevron — the rope
+       *    visibly emits from there on the pointer. */
+      rope[0]!.x = cx + CHEVRON_BACK_X;
+      rope[0]!.y = cy + CHEVRON_BACK_Y;
 
-      /* 4. Distance constraint relaxation (Jakobsen). Each pass,
-       *    each segment is pulled / pushed so its length matches
-       *    segLen. Endpoints are fixed, so when only one side of a
-       *    segment is movable, that side eats the entire correction
-       *    (factor of 2). */
+      /* 4. Distance constraint relaxation (Jakobsen). Only node 0
+       *    is fully fixed — every other node moves, including the
+       *    last. When the cursor jumps, the constraint chain
+       *    transports the displacement down the rope toward the
+       *    label; combined with viscous friction this gives the
+       *    "thick medium dragging the pill" feel. */
       for (let iter = 0; iter < ROPE_ITERS; iter++) {
         for (let i = 0; i < ROPE_NODES - 1; i++) {
           const a = rope[i]!;
@@ -293,31 +292,36 @@ export function CustomCursor() {
           const sdx = b.x - a.x;
           const sdy = b.y - a.y;
           const sd = Math.sqrt(sdx * sdx + sdy * sdy) || 1e-4;
-          const diff = (sd - segLen) / sd;
+          const diff = (sd - SEG_LEN) / sd;
           const ox = sdx * 0.5 * diff;
           const oy = sdy * 0.5 * diff;
 
-          const aFixed = i === 0;
-          const bFixed = i + 1 === ROPE_NODES - 1;
-
-          if (!aFixed && !bFixed) {
+          if (i === 0) {
+            /* Node 0 is pinned; node 1 takes the full correction. */
+            b.x -= ox * 2;
+            b.y -= oy * 2;
+          } else {
             a.x += ox;
             a.y += oy;
             b.x -= ox;
             b.y -= oy;
-          } else if (aFixed && !bFixed) {
-            b.x -= ox * 2;
-            b.y -= oy * 2;
-          } else if (!aFixed && bFixed) {
-            a.x += ox * 2;
-            a.y += oy * 2;
           }
         }
       }
 
-      /* 5. Render — polyline through every node. With 14 nodes
-       *    the segments are short enough that the eye reads the
-       *    polyline as a curve; rounded line joins help. */
+      /* 5. Render — cursor at pointer, label at the last rope
+       *    node (the label IS the end of the rope), rope as a
+       *    polyline through every node. */
+      const cursor = cursorRef.current;
+      if (cursor) {
+        cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
+      }
+      const label = labelRef.current;
+      if (label) {
+        const lx = rope[ROPE_NODES - 1]!.x;
+        const ly = rope[ROPE_NODES - 1]!.y;
+        label.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
+      }
       const leash = leashPathRef.current;
       if (leash) {
         let d = `M${rope[0]!.x.toFixed(1)} ${rope[0]!.y.toFixed(1)}`;
