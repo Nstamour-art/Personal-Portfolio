@@ -20,15 +20,87 @@
   max-width: 18ch;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.nav {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.navBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: transparent;
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color var(--t-fast), background var(--t-fast),
+    color var(--t-fast), transform var(--t-fast), opacity var(--t-fast);
+}
+.navBtn:hover:not(:disabled) {
+  border-color: var(--fg-2);
+  background: var(--fg);
+  color: var(--bg);
+  transform: translateY(-1px);
+}
+.navBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* The track bleeds past the section's --pad so the right peek doesn't
+ * collide with the page gutter. Inner padding restores the visual
+ * alignment of the first slide with the section's left edge. */
+.track {
+  display: flex;
   gap: 32px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 8px;
+  margin-right: calc(var(--pad) * -1);
+  padding-right: var(--pad);
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+}
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.slide {
+  flex: 0 0 clamp(280px, 60vw, 760px);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 @media (max-width: 880px) {
-  .grid {
-    grid-template-columns: 1fr;
+  .slide {
+    flex: 0 0 86vw;
+  }
+  .nav {
+    display: none;
+  }
+  .track {
+    gap: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    scroll-behavior: auto;
   }
 }
 
