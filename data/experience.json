@@ -1,40 +1,46 @@
 {
   "rows": [
     {
-      "year": "2025",
-      "role": "AI workflow & motion — independent",
-      "note": "Tools, pipelines, prototypes",
-      "tag": "AI / Motion"
+      "year": "2025-Present",
+      "role": "Vubiquity - Media Content Engineer",
+      "note": "Tools, pipelines, AI automation for film and television",
+      "tag": "AI, Automation, Code, Workflows"
     },
     {
-      "year": "2024",
-      "role": "Xogot — visual rebuild",
-      "note": "Character & environment art direction",
-      "tag": "Illustration"
+      "year": "2025-2026",
+      "role": "Xibbon Inc. - Open Source Creative Consultant",
+      "note": "Tutorial creation, character design and game development",
+      "tag": "Code, Illustration, Writing"
     },
     {
-      "year": "2023",
-      "role": "Vubiquity — identity in motion",
-      "note": "Logo treatment, broadcast variants",
-      "tag": "Motion"
+      "year": "2022-2025",
+      "role": "Vubiquity - Digital Media Technician - Master QC",
+      "note": "Content delivery with a growing expansion into coding and workflow development.",
+      "tag": "Code, Workflows, Automation"
     },
     {
-      "year": "2022—2023",
-      "role": "Food Network — The Big Bake S1 & S2",
-      "note": "Lead motion designer, templated rigs",
-      "tag": "Broadcast"
+      "year": "2021",
+      "role": "Nikki Ray Media Agency - Graphic Artist",
+      "note": "Motion artist on The Big Bake S2 and The Great Chocolate Showdown S2",
+      "tag": "Broadcast TV, Motion Design, Illustration"
     },
     {
-      "year": "2021—2024",
-      "role": "Nikki Ray & Architect Films",
-      "note": "Documentary titling and reel work",
-      "tag": "Video"
+      "year": "2020",
+      "role": "Architect Films - Motion Designer",
+      "note": "Motion Designer on Fire Masters, The Big Bake S1 and a number of broadcast shows.",
+      "tag": "Video, Broadcast, Motion Design"
     },
     {
-      "year": "Ongoing",
-      "role": "Personal — Weave, 3D log, generative",
-      "note": "Worldbuilding and tool studies",
-      "tag": "Studio"
+      "year": "2019-2020",
+      "role": "Architect Films - Assistant Editor",
+      "note": "Assistant Editor on multiple broadcast shows, creating cutdowns and organizing content in Avid Media Composer",
+      "tag": "Broadcast, Video"
+    },
+    {
+      "year": "2015-2018",
+      "role": "York University, LTS - Digital Media Production Assistant",
+      "note": "Generalist video production technician, creating videos to promote the university and it's faculties.",
+      "tag": "Video, Production, Motion, Sound, Design, Editing"
     }
   ]
 }
