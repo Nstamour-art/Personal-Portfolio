@@ -294,21 +294,33 @@ export default config({
                 itemLabel: (props) => props.fields.label.value || 'Step',
               },
             ),
+            /* The four meta cells render in this order on the case page
+             * (Snapshot column, under the summary paragraph):
+             *   Output  ·  Tools  ·  Duration  ·  Status
+             * Keystatic field order mirrors the page so editors can scan
+             * top-to-bottom and match what they'll see live. Labels also
+             * match the page's "k" header text exactly (Output, not
+             * "Final deliverable(s)") to remove the naming mismatch that
+             * made the field hard to find. */
+            output: fields.text({
+              label: 'Output',
+              description:
+                'Shown as the first cell in the Snapshot meta grid on the case page. Final deliverables, e.g. "Broadcast, social, product" or "Web app + design system".',
+            }),
             tools: fields.text({
-              label: 'Tools used',
-              description: 'Free text, e.g. "AE · Lottie · Figma".',
+              label: 'Tools',
+              description:
+                'Second cell in the Snapshot meta grid. Free text, e.g. "AE · Lottie · Figma" or "Next.js · TS · Figma".',
             }),
             duration: fields.text({
-              label: 'Production duration',
-              description: 'e.g. "6 weeks active".',
+              label: 'Duration',
+              description:
+                'Third cell in the Snapshot meta grid. e.g. "6 weeks active" or "3 sprints".',
             }),
             status: fields.text({
               label: 'Status',
-              description: 'e.g. "Shipped", "In production", "Concept".',
-            }),
-            output: fields.text({
-              label: 'Final deliverable(s)',
-              description: 'e.g. "Broadcast, social, product".',
+              description:
+                'Fourth cell in the Snapshot meta grid. e.g. "Shipped", "In production", "Concept".',
             }),
           },
           { label: 'Case study details' },
