@@ -96,8 +96,15 @@
   z-index: 2;
 }
 
+/* Was var(--muted) (#7a7f8a) — a cool gray that lost too much contrast
+ * against the deeper bottom scrim added in a1510ef. Lifted to --fg-2
+ * (#c9c5bc, the standard secondary text tone) so the subtitle reads
+ * clearly while still sitting one step below the label's --fg-2 inherit
+ * via heavier weight perception (label is on the left, subtitle on the
+ * right of the same .caption row, so the eye treats label-first as
+ * the primary anchor regardless of identical color values). */
 .note {
-  color: var(--muted);
+  color: var(--fg-2);
 }
 
 .secLabel {
