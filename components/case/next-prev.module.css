@@ -3,6 +3,16 @@
   grid-template-columns: 1fr 1fr;
   gap: 40px;
   padding: 80px var(--pad);
+  /* `width: 100%` is load-bearing: the page-transition shell wraps
+   * <main> in `display: flex; flex-direction: column`, which would
+   * normally stretch block children to the cross axis — but a flex
+   * item whose own display is `grid` with all-`fr` columns and no
+   * intrinsic-width content (the prev/next panels are abs-positioned
+   * placeholders) collapses to ~0 width. Forcing 100% lets the grid
+   * resolve its `1fr 1fr` against the parent's full width. The
+   * sibling sections (`.brief`, etc.) avoid this because their grids
+   * carry real text content whose min-content props them open. */
+  width: 100%;
   max-width: var(--maxw);
   margin: 0 auto;
 }
