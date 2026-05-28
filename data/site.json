@@ -5,14 +5,42 @@
   "role": "Creative Technologist",
   "tagline": "Motion artist & AI workflow engineer",
   "manifesto": "Designing in motion. Building with systems. Telling stories with frames, code, and process.",
-  "location": "Montréal — remote",
+  "location": "Toronto, Canada — remote",
   "email": "hello@nstamour.xyz",
-  "avatar": { "src": "/assets/site/avatar.png", "alt": "Nicolas St-Amour" },
+  "avatar": {
+    "alt": "Nicolas St-Amour"
+  },
   "socials": [
-    { "label": "Instagram", "handle": "@nstamour.work", "href": "#" },
-    { "label": "Vimeo", "handle": "vimeo.com/nstamour", "href": "#" },
-    { "label": "LinkedIn", "handle": "linkedin.com/in/nstamour", "href": "#" },
-    { "label": "Read.cv", "handle": "read.cv/nstamour", "href": "#" }
+    {
+      "label": "Instagram",
+      "handle": "@nstamour.art",
+      "href": "www.instagram.com/nstamour.art"
+    },
+    {
+      "label": "YouTube",
+      "handle": "@nstamour",
+      "href": "www.youtube.com/@nstamour"
+    },
+    {
+      "label": "LinkedIn",
+      "handle": "@nstamour",
+      "href": "www.linkedin.com/in/nstamour"
+    },
+    {
+      "label": "Behance",
+      "handle": "@nstamour",
+      "href": "www.behance.com/nstamour"
+    }
   ],
-  "marquee": ["Motion", "3D", "Illustration", "AI Workflows", "Code", "Process"]
+  "marquee": [
+    "Motion",
+    "3D",
+    "Illustration",
+    "AI Workflows",
+    "Code",
+    "Automation",
+    "Design",
+    "CGI",
+    "Game Development"
+  ]
 }
