@@ -1,11 +1,11 @@
 ---
-title: Underwriter
+title: Financial Underwriter Recommendation Prototype
 about:
   order: 6
   sub: Wealthsimple-styled prototype
   year: '2025'
   client: Independent
-  role: 'Product design, prototype engineering, AI workflows'
+  role: Product design, prototype engineering, AI workflows
   disciplines:
     - ai
     - code
@@ -14,45 +14,66 @@ visibility:
   featured: false
   draft: false
 story:
-  pitch: An AI underwriting prototype that surfaces the model instead of hiding it.
+  pitch: >-
+    What if your bank statement was a better measure of creditworthiness than
+    your credit score?
   brief: >-
-    An AI-assisted underwriting prototype, styled in a fintech idiom — calm,
-    dense, and explicit about confidence.
+    A full-stack AI underwriting pipeline that replaces the bureau score with
+    behavioural analysis, ingesting raw transaction data and producing a
+    structured credit decision with product recommendations. Built in Python
+    with a cascade of NLP models, a local LLM fallback, and a human review layer
+    for edge cases.
   summary: >-
-    A working AI-underwriting prototype. Document ingestion, structured
-    extraction, and a calm reviewer UI.
+    This project started with a personal frustration and became a technical one.
+    Traditional credit scoring reduces financial identity to a single number
+    that cannot distinguish hardship from risk. This pipeline takes a different
+    approach: raw bank transactions in, cleaned and classified behavioural data
+    through, and a confidence-calibrated underwriting decision out, complete
+    with Canadian product recommendations and a human override workflow for
+    rejected applicants. The system was designed to function as a real
+    prototype, not just a demo, with offline model fallbacks, PII-free audit
+    logging, and a Streamlit interface built for an actual advisor workflow.
 visuals:
-  heroSrc: null
-  heroAlt: Underwriter — review screen final state
-  heroVideo: ''
-  thumbSrc: null
-  thumbAlt: ''
+  heroSrc: /assets/projects/underwriter/visuals/heroSrc.png
+  heroAlt: Financial Underwriter score screen
 caseStudy:
   process:
-    - label: Information architecture
-      note: Card-sort + flows
-      mediaSrc: null
-      mediaAlt: ''
-    - label: Prompt workbench
-      note: Eval grid
-      mediaSrc: null
-      mediaAlt: ''
-    - label: UI calibration
-      note: Confidence badging
-      mediaSrc: null
-      mediaAlt: ''
-  tools: Next.js · Claude · TypeScript
-  duration: 5 weeks active
+    - label: Recommendation page
+      note: This page recommends Weakthsimple products based on the financial info.
+      mediaSrc: /assets/projects/underwriter/caseStudy/process/0/mediaSrc.png
+    - label: Transaction page
+      note: >-
+        This page shows the transactions from the client's statements or Plaid
+        link.
+      mediaSrc: /assets/projects/underwriter/caseStudy/process/1/mediaSrc.png
+    - label: Employee Oversight
+      note: >-
+        This page provide the employee the ability to override a low confidence
+        decision because AI always need a HITL.
+      mediaSrc: /assets/projects/underwriter/caseStudy/process/2/mediaSrc.png
+    - label: Spending Trends
+      note: >-
+        Shows an overview of the Spending trends of the client for the last
+        year.
+      mediaSrc: /assets/projects/underwriter/caseStudy/process/3/mediaSrc.png
+  tools: >-
+    Python · Streamlit · Anthropic Claude · OpenAI · spaCy · BERT · DeBERTa ·
+    Qwen 3 · llama-cpp · Plaid · SQLite · Altair · Plotly · HuggingFace
+    Transformers
+  duration: 24 hours
   status: Prototype
-  output: ''
 advanced:
   ph: ''
   span: ''
-  seoTitle: ''
-  seoDescription: ''
 ---
-Most AI workflow UI hides the model. Underwriter does the opposite — it surfaces every extraction as a citation, every confidence score as a visible attribute, every model call as a step on the timeline.
+A full-stack AI pipeline that ingests raw bank transaction data, cleans and classifies it through a cascade of NLP models, and produces a credit-style underwriting decision with product recommendations, without relying on a traditional bureau score.
 
-I styled the prototype in a fintech idiom because that audience is allergic to surprise. The visual restraint forces the AI behaviour to be the interesting thing, not the chrome.
+The motivation was personal. In 2020, a serious medical condition left me unable to work for two years. My credit score collapsed, not because of irresponsible behaviour, but because of circumstance. Rebuilding it took years, even though my underlying financial habits were sound throughout. That experience made the gap in the system concrete: creditworthy people are routinely excluded by a metric that cannot distinguish hardship from risk. This project is an attempt to answer the question of what underwriting would look like if it were designed today.
 
-Under the hood it's a small Claude-driven pipeline with hand-tuned prompts, eval grids for each extraction type, and a deterministic post-processor. The reviewer sees a calm three-column layout. The pipeline behind it is paranoid.
+The pipeline moves through several stages. Raw transaction data enters via CSV upload or Plaid API, is normalized into structured dataclasses, and passes through a three-tier memo cleaning cascade: a fast lookup path for common patterns, spaCy and BERT NER for entity extraction, and a local Qwen 3 8B LLM fallback for low-confidence results. Cleaned transactions are then categorized using zero-shot NLI inference across a two-level taxonomy before a financial summary is derived and passed to an LLM for scoring, decision, and product recommendations. Anthropic claude-sonnet-4-6 is the preferred provider, with OpenAI gpt-4o-mini as fallback.
+
+A deliberate design choice runs through the whole system: AI handles the complexity that makes manual statement review impractical at scale, but a human retains authority over consequential outcomes. When an applicant is rejected, the Decision Review tab surfaces the model's reasoning, confidence breakdown, and data signals, and gives the advisor the ability to override with written justification. Context like recovering from illness or irregular but legitimate income is exactly the kind of judgment that should not be automated away.
+
+Every pipeline run is logged to a local SQLite audit trail, storing a SHA-256 hash of the input, score, confidence, model provenance, and data completeness signals, with no PII stored directly. Product recommendations are drawn from a curated Canadian catalogue including Wealthsimple products, with eligibility rules enforced both in the system prompt and in the product catalogue itself.
+
+The application is built in Python 3.11 with a Streamlit frontend, Altair and Plotly for visualizations, HuggingFace Transformers for the NLP stack, llama-cpp for local LLM inference, and Plaid for sandbox banking data.

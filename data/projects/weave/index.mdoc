@@ -1,58 +1,54 @@
 ---
-title: Figma Weave
+title: 'Figma Weave Explorations: From Sketch to 3D'
 about:
   order: 4
   sub: Character & world development
-  year: '2024'
+  year: '2026'
   client: Self-initiated
-  role: 'Worldbuilding, illustration, motion tests'
+  role: Character Design, 3D modelling
   disciplines:
-    - illo
     - 3d
-  primary: illo
+    - ai
+  primary: ai
 visibility:
-  featured: false
+  featured: true
   draft: false
 story:
-  pitch: ''
+  pitch: An exploration into using Figma Weave as a concept-to-mesh pipeline.
   brief: >-
-    A long-form worldbuilding sandbox: characters, environments, and a small
-    motion language for a fictional cooperative.
+    A practical test of Figma Weave as a concept-to-mesh pipeline, taking a
+    hand-drawn sketch through prompt engineering, AI image generation, and 3D
+    model output in a single connected workflow.
   summary: >-
-    An ongoing worldbuilding project — characters, biomes, and a small motion
-    vocabulary that ties them together.
+    An exploration into using Figma Weave as a concept-to-mesh pipeline, using a
+    rough personal sketch as the starting point and a retopology-ready 3D model
+    as the target output. The creature being developed here is intended for an
+    animation project currently in production.
 visuals:
-  heroSrc: null
-  heroAlt: Weave — world bible hero spread
-  heroVideo: ''
-  thumbSrc: null
-  thumbAlt: ''
+  heroSrc: /assets/projects/weave/visuals/heroSrc.png
+  heroAlt: The full workflow.
 caseStudy:
   process:
-    - label: World map iterations
-      note: Six rounds
-      mediaSrc: null
-      mediaAlt: ''
-    - label: Character lineup
-      note: Cast of twelve
-      mediaSrc: null
-      mediaAlt: ''
-    - label: Motion test reel
-      note: Loop studies
-      mediaSrc: null
-      mediaAlt: ''
-  tools: Figma · After Effects · Notion
+    - label: Starting sketch
+      note: The subway sketch that triggered the idea
+      mediaSrc: /assets/projects/weave/caseStudy/process/0/mediaSrc.png
+    - label: Gemini character render
+      note: >-
+        The chosen render out of the first Gemini node to use for the
+        turn-arounds and 3D.
+      mediaSrc: /assets/projects/weave/caseStudy/process/1/mediaSrc.png
+    - label: Final 3D model
+      note: The final 3D model from Rodin.
+      mediaSrc: /assets/projects/weave/caseStudy/process/2/mediaSrc.png
+  tools: Figma Weave - Blender
   duration: Ongoing
   status: Ongoing
-  output: ''
 advanced:
   ph: ''
   span: ''
-  seoTitle: ''
-  seoDescription: ''
 ---
-Weave started as a way to test how much worldbuilding I could carry inside Figma alone. The constraint shaped everything — every character, biome and motion test lives in one file, on linked components, with a single design-token sheet.
+The workflow, visible in the node graph above, chains prompt enhancement stages into image generation, producing multiple angle passes that are then used as reference inputs for 3D generation. Arriving at a stable version of this pipeline required significant experimentation. Figma Weave provides no guidance on model performance or recommended use cases, so understanding which models work well for which tasks is entirely the result of trial and error.
 
-The interesting discovery was that the constraints of a design tool make for surprisingly rigorous worldbuilding. You can't fudge a culture if every prop is a published component. Every contradiction surfaces immediately.
+For image generation, Gemini 2.5 Flash (Nano Banana) proved the most consistent at interpreting a sketch and following a prompt with minimal hallucination. On the 3D side, the models varied widely in quality. Without a well-constructed prompt and multiple reference images, outputs drifted significantly from the source material. Once properly constrained, Rodin 3D V2 produced the strongest results.
 
-Motion tests are exported via the Figma → After Effects bridge and rendered into a small loop library. They're not the point of the project, but they make the static frames feel inhabited.
+The output mesh requires correction in Blender or Maya before it is animation-ready, but as a first-pass pipeline from sketch to workable 3D base, the workflow is effective. Figma Weave is a genuinely capable tool, though one that rewards patience and a willingness to treat early sessions as research.
