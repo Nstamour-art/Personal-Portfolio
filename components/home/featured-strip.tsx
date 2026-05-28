@@ -10,8 +10,12 @@ import styles from './featured-strip.module.css';
 
 /**
  * Selected work carousel — SPEC §6.5 (FeaturedStrip).
- * Featured project first, then the next four by file order, capped at 5.
- * Falls back to the first five if nothing's marked featured.
+ * The first five non-featured projects in file order. The featured
+ * project itself headlines `HeroMarquee` directly above this section,
+ * so showing it again here would put the same case on the home index
+ * twice. If nothing is marked featured `getFeatured()` falls back to
+ * the first project, which then gets filtered out — the strip simply
+ * starts with project #2 in that case.
  *
  * Layout: horizontal scroll-snap carousel with prev/next controls in the
  * head. Tiles use a portrait 4/5 aspect so each slide reads as a tall,
@@ -20,8 +24,7 @@ import styles from './featured-strip.module.css';
  */
 export function FeaturedStrip() {
   const featured = getFeatured();
-  const rest = PROJECTS.filter((p) => p.id !== featured.id);
-  const list = [featured, ...rest].slice(0, 5);
+  const list = PROJECTS.filter((p) => p.id !== featured.id).slice(0, 5);
 
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [canPrev, setCanPrev] = useState(false);
