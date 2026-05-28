@@ -7,12 +7,31 @@
     "notesEyebrow": "Notes & process",
     "notesTitle": "Short writing on tools, rigs and how things get made.",
     "typeHeadline": "Motion artist building AI workflows for the things that move.",
-    "typeRoleStrip": ["Motion", "3D / CG", "Illustration", "Video", "AI / Workflows", "Code"],
+    "typeRoleStrip": [
+      "Motion",
+      "3D / CG",
+      "Illustration",
+      "Video",
+      "AI / Workflows",
+      "Code"
+    ],
     "typeMetaGrid": [
-      { "k": "Currently", "v": "Independent — building tools and reels." },
-      { "k": "Based", "v": "Montréal — remote" },
-      { "k": "Selected clients", "v": "Vubiquity, Food Network, Xogot, Architect Films." },
-      { "k": "Status", "v": "Currently in a full-time role." }
+      {
+        "k": "Currently",
+        "v": "Building tools and creating."
+      },
+      {
+        "k": "Based",
+        "v": "Toronto, Canada"
+      },
+      {
+        "k": "Selected Work History",
+        "v": "Vubiquity, Independent Contractor, Nikki Ray Media Agency, Architect Films, York University."
+      },
+      {
+        "k": "Status",
+        "v": "Currently in a full-time role."
+      }
     ]
   },
   "notes": {
@@ -29,18 +48,22 @@
     "snapshotLabel": "Snapshot",
     "processEyebrow": "Process",
     "processHeadline": "How it got made.",
-    "processBlurb": "Selected stills from the working files — block-outs, style frames and tests that informed the final piece.",
+    "processBlurb": "Selected stills for the project, either a in-progress image or a reference.",
     "writeupLabel": "Notes on the build",
     "backLink": "Back to index",
     "prevLabel": "← Previous case",
     "nextLabel": "Next case →"
   },
   "about": {
-    "eyebrow": "Studio of one — Montréal · remote",
-    "headline": "A motion artist who fell in love with systems.",
-    "summary": "I design in motion and build with systems. The last five years have been broadcast graphics, 3D animation and identity work — the kind of projects where the rig matters as much as the frame. Since **2024** roughly half of my time has been on AI workflows: same instinct, different surface — figure out what the system wants to do, build the rig that lets it do it, then make it *look* like it was always supposed to feel that way.",
+    "eyebrow": "Studio of one — Toronto, Canada",
+    "headline": "A technical artist who fell in love with system architecture but never left creative work behind.",
+    "summary": "I am a creative polymath and Python engineer who treats software architecture like a complex puzzle. Coming from a deep background in scriptwriting, filmmaking, animation and 3D modeling, I bring a completely fresh perspective to backend engineering. I am not weighed down by legacy coding dogma. Instead I natively blend AI development tools with creative design thinking, allowing me to bridge the gap between technical plumbing and frictionless experience.",
     "practiceLabel": "What I bring",
-    "practiceLines": ["EST. 2021", "Independent practice", "Selective collaborations"],
+    "practiceLines": [
+      "Creative thinking",
+      "Design chops",
+      "Fresh perspectives"
+    ],
     "experienceEyebrow": "Experience",
     "experienceHeadline": "Selected projects, in order of recency.",
     "educationEyebrow": "Education",
@@ -49,14 +72,14 @@
   "contact": {
     "eyebrow": "Get in touch — usually replies same week",
     "headline": "New work, collaboration, or just to say hello.",
-    "subtitle": "For project enquiries, please include a one-paragraph brief, your rough timeline, and any reference material. I read everything — usually reply within five working days.",
+    "subtitle": "For project enquiries, please include a one-paragraph brief, your rough timeline, and any reference material.",
     "workingWithLabel": "Working with",
     "workingWith": [
       "Brand identity teams",
       "Independent studios",
       "Broadcast networks",
       "Product teams adopting AI",
-      "Director-led films"
+      "Game productions"
     ]
   },
   "footer": {
@@ -64,7 +87,12 @@
     "siteHead": "Site",
     "elsewhereHead": "Elsewhere",
     "colophonHead": "Colophon",
-    "colophon": ["Helvetica Neue", "IBM Plex Mono", "Hand-built, no CMS", "v.26.05"],
+    "colophon": [
+      "Helvetica Neue",
+      "IBM Plex Mono",
+      "Hand-built, no CMS",
+      "v.26.05"
+    ],
     "rightsTemplate": "© {name} — Folio '26"
   }
 }
