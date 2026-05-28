@@ -13,6 +13,11 @@
   },
   "socials": [
     {
+      "label": "LinkedIn",
+      "handle": "@nstamour",
+      "href": "https://www.linkedin.com/in/nstamour"
+    },
+    {
       "label": "Instagram",
       "handle": "@nstamour.art",
       "href": "https://www.instagram.com/nstamour.art"
@@ -21,16 +26,6 @@
       "label": "YouTube",
       "handle": "@nstamour",
       "href": "https://www.youtube.com/@nstamour"
-    },
-    {
-      "label": "LinkedIn",
-      "handle": "@nstamour",
-      "href": "https://www.linkedin.com/in/nstamour"
-    },
-    {
-      "label": "Behance",
-      "handle": "@nstamour",
-      "href": "https://www.behance.net/nstamour"
     }
   ],
   "marquee": [
