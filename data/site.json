@@ -8,6 +8,7 @@
   "location": "Toronto, Canada — remote",
   "email": "hello@nstamour.xyz",
   "avatar": {
+    "src": "/assets/site/avatar/src.png",
     "alt": "Nicolas St-Amour"
   },
   "socials": [
