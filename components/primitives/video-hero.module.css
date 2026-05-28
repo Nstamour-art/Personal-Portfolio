@@ -44,6 +44,12 @@
   margin-left: 4px;
 }
 
+@media (max-width: 768px) {
+  .play {
+    top: 35%;
+  }
+}
+
 .badge {
   position: absolute;
   top: 16px;
