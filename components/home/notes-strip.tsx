@@ -6,9 +6,15 @@ import styles from './notes-strip.module.css';
 
 /**
  * Notes strip on the home page — pinned-first, capped to 3.
+ *
+ * Returns `null` when there are no published notes, so the home page
+ * doesn't render an empty "Notes & process" section with an
+ * "All notes" CTA pointing at an empty index. Mirrors the rail/footer
+ * Notes-tab auto-hide rule (see `getVisibleNav()` in lib/content.ts).
  */
 export function NotesStrip() {
   const list = getSortedNotes().slice(0, 3);
+  if (list.length === 0) return null;
 
   return (
     <section className={styles.strip}>
