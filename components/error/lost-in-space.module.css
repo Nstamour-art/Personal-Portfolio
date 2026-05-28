@@ -8,6 +8,18 @@
  *     touching the footer's top rule. */
 .page {
   padding: 40px var(--pad) 24px;
+  /* `width: 100%` is load-bearing here. The page-transition shell
+   * wraps <main> in `display: flex; flex-direction: column`, which
+   * makes this element a flex item. We're also a column flex container
+   * ourselves with `margin: 0 auto` (to center under max-width). In a
+   * flex parent, `margin: auto` on the cross axis consumes all leftover
+   * space — but it ALSO shrinks the flex item to its intrinsic content
+   * width instead of letting it claim cross-axis space up to its
+   * max-width. The recovery CTAs row is narrow, so without width:100%
+   * the entire .page collapses to ~720px on a 1920-wide viewport and
+   * the embedded game canvas can never reach its 1248px cap. Same bug
+   * we hit on the case-study NextPrev grid; same fix. */
+  width: 100%;
   max-width: var(--maxw);
   margin: 0 auto;
   display: flex;
