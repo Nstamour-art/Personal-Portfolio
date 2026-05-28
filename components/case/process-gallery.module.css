@@ -84,13 +84,24 @@
  * description (.note). The parent's color sets the LABEL color via
  * inheritance; the .note rule below overrides for the description.
  *
- * Two iterations on this:
- *   v1: label --fg-2, note --muted → note unreadable against the
- *       deepened scrim (88% → 96% darkest stop in a1510ef)
- *   v2: label --fg-2, note --fg-2 → both readable, but identical
- *       brightness made the two columns blur into one block
- *   v3 (now): label --fg, note --fg-2 → clear primary/secondary
- *       hierarchy, both still well above the legibility floor */
+ * Four iterations to land here:
+ *   v1 (pre-88696c1): label --fg-2, note --muted
+ *                     → note unreadable; scrim was too soft
+ *   v2 (88696c1):     label --fg-2, note --fg-2
+ *                     → both readable, but flat — no hierarchy
+ *   v3 (c0561a6):     label --fg,   note --fg-2
+ *                     → hierarchy restored but both read as
+ *                       punched-out headline-bright text
+ *   v4 (this commit): label --fg-2, note --muted
+ *                     → wider luminance gap (~30% vs ~13%) and
+ *                       both tones now feel like typographic
+ *                       detail rather than shouting at the reader
+ *
+ * The --muted tone (#7a7f8a) only reads cleanly here because
+ * a1510ef deepened the scrim to 96% bg at its darkest stop with a
+ * 45% height — at the caption's bottom-12px position the underlying
+ * pixels are effectively solid --bg, so we're not asking --muted to
+ * fight a busy image, just to sit at AA contrast against page bg. */
 .caption {
   position: absolute;
   bottom: 12px;
@@ -104,12 +115,12 @@
   font-size: 10.5px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--fg);
+  color: var(--fg-2);
   z-index: 2;
 }
 
 .note {
-  color: var(--fg-2);
+  color: var(--muted);
 }
 
 .secLabel {
