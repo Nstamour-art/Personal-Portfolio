@@ -53,18 +53,18 @@
   background:
     linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--bg) 72%, transparent) 0%,
-      color-mix(in srgb, var(--bg) 38%, transparent) 35%,
-      color-mix(in srgb, var(--bg) 14%, transparent) 70%,
+      color-mix(in srgb, var(--bg) 84%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 50%, transparent) 35%,
+      color-mix(in srgb, var(--bg) 22%, transparent) 70%,
       transparent 100%
     ) top / 100% 28% no-repeat,
     linear-gradient(
       to top,
-      color-mix(in srgb, var(--bg) 90%, transparent) 0%,
-      color-mix(in srgb, var(--bg) 60%, transparent) 35%,
-      color-mix(in srgb, var(--bg) 25%, transparent) 70%,
+      color-mix(in srgb, var(--bg) 96%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 72%, transparent) 35%,
+      color-mix(in srgb, var(--bg) 35%, transparent) 70%,
       transparent 100%
-    ) bottom / 100% 60% no-repeat;
+    ) bottom / 100% 65% no-repeat;
   z-index: 2;
 }
 

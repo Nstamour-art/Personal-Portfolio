@@ -47,12 +47,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 45%;
+  height: 50%;
   background: linear-gradient(
     to top,
-    color-mix(in srgb, var(--bg) 88%, transparent) 0%,
-    color-mix(in srgb, var(--bg) 55%, transparent) 35%,
-    color-mix(in srgb, var(--bg) 22%, transparent) 70%,
+    color-mix(in srgb, var(--bg) 96%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 68%, transparent) 35%,
+    color-mix(in srgb, var(--bg) 32%, transparent) 70%,
     transparent 100%
   );
   pointer-events: none;
@@ -68,8 +68,8 @@
   height: 22%;
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--bg) 70%, transparent) 0%,
-    color-mix(in srgb, var(--bg) 30%, transparent) 55%,
+    color-mix(in srgb, var(--bg) 82%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 42%, transparent) 55%,
     transparent 100%
   );
   pointer-events: none;

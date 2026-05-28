@@ -35,18 +35,18 @@
   background:
     linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--bg) 78%, transparent) 0%,
-      color-mix(in srgb, var(--bg) 45%, transparent) 35%,
-      color-mix(in srgb, var(--bg) 18%, transparent) 70%,
+      color-mix(in srgb, var(--bg) 88%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 56%, transparent) 35%,
+      color-mix(in srgb, var(--bg) 24%, transparent) 70%,
       transparent 100%
     ) top / 100% 22% no-repeat,
     linear-gradient(
       to top,
-      color-mix(in srgb, var(--bg) 92%, transparent) 0%,
-      color-mix(in srgb, var(--bg) 65%, transparent) 35%,
-      color-mix(in srgb, var(--bg) 28%, transparent) 70%,
+      color-mix(in srgb, var(--bg) 97%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 76%, transparent) 35%,
+      color-mix(in srgb, var(--bg) 38%, transparent) 70%,
       transparent 100%
-    ) bottom / 100% 55% no-repeat;
+    ) bottom / 100% 60% no-repeat;
   pointer-events: none;
   opacity: 1;
   transition: opacity 320ms ease;
@@ -122,11 +122,17 @@
 }
 
 .title {
-  font-size: clamp(48px, 8vw, 128px);
-  line-height: 0.88;
-  letter-spacing: -0.035em;
+  /* Reduced from clamp(48, 8vw, 128). The 128px cap was overwhelming
+   * on wide displays (the title swallowed half the hero) and forced
+   * the bottom-of-hero meta grid into a tight space. ~25% smaller at
+   * every breakpoint reads as more editorial / less broadcast.
+   * max-width pushed from 14ch → 16ch so a longer title still finds a
+   * clean two-line break at the smaller size. */
+  font-size: clamp(40px, 6.4vw, 96px);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
   font-weight: 500;
-  max-width: 14ch;
+  max-width: 16ch;
   margin: 0;
 }
 
