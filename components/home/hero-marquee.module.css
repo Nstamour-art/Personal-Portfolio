@@ -168,9 +168,18 @@
   /* Same coordinate system as the avatar so the dither column rises
    * exactly behind the figure and terminates at the divider line.
    * Width is slightly larger than the avatar so the bloom feathers
-   * past the figure's left edge. */
+   * past the figure's left edge.
+   *
+   * Top bleed: at `top: 0` the mask's tapered top edge sat ~55%
+   * opaque at the row's top, producing a visible horizontal seam
+   * where the halftone got chopped off. Extending the bloom upward
+   * by exactly the hero's `padding-top` clamp lets the mask's fade
+   * complete inside the otherwise-empty top gutter instead of
+   * against the body bg. The mask `y-center` shifts 32% → 38% to
+   * compensate for the taller box so the dense-dot region stays
+   * roughly anchored behind the face in row coordinates. */
   position: absolute;
-  top: 0;
+  top: clamp(-80px, -6vw, -56px);
   bottom: 0;
   right: calc(-1 * var(--pad));
   z-index: 0;
@@ -197,7 +206,7 @@
    * face (~76% across, ~32% down), fade through the upper body,
    * vanish toward the left and the bloom's edges. */
   -webkit-mask-image: radial-gradient(
-    ellipse 55% 62% at 76% 32%,
+    ellipse 55% 62% at 76% 38%,
     rgba(0, 0, 0, 1) 0%,
     rgba(0, 0, 0, 0.95) 24%,
     rgba(0, 0, 0, 0.55) 52%,
@@ -205,7 +214,7 @@
     transparent 100%
   );
   mask-image: radial-gradient(
-    ellipse 55% 62% at 76% 32%,
+    ellipse 55% 62% at 76% 38%,
     rgba(0, 0, 0, 1) 0%,
     rgba(0, 0, 0, 0.95) 24%,
     rgba(0, 0, 0, 0.55) 52%,
