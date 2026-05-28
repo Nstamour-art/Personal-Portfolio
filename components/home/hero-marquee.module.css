@@ -352,6 +352,37 @@
   text-decoration: none;
 }
 
+/* Bottom scrim — mirrors the recipe used by `.media::after` on the
+ * Tile component (see components/work/tile.module.css). Keeps the
+ * peek's title / sub / year row legible no matter how bright the
+ * featured project's video poster happens to be, and gives the
+ * featured peek the same editorial finish as the rest of the
+ * image-with-text surfaces across the site (work mosaic tiles,
+ * process gallery, case-study heroes). Bound to --bg via color-mix
+ * so the scrim harmonises with the page chrome instead of reading
+ * as a generic black band, with a 4-stop falloff approximating an
+ * ease curve. Sits at z:1 so it's above the VideoHero (auto stack)
+ * but below `.peekLabel` (z:2). `pointer-events: none` keeps the
+ * wrapping <Link> fully clickable and lets the play button inside
+ * VideoHero receive its own clicks. */
+.peek::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 50%;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--bg) 96%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 68%, transparent) 35%,
+    color-mix(in srgb, var(--bg) 32%, transparent) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
 .peekLabel {
   position: absolute;
   bottom: 16px;
