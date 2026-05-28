@@ -1,5 +1,13 @@
 .strip {
   padding: 56px var(--pad) 32px;
+  /* `width: 100%` is load-bearing: <main> is a flex column, and the
+   * `margin: 0 auto` below disables flex stretch. Without an explicit
+   * width the strip sizes to its content's max-content — i.e. the full
+   * uncollapsed carousel track (~all slides wide) clamped to --maxw —
+   * and overflows the column, clipping the nav controls off-screen.
+   * Filling the column keeps it scaling; --maxw + auto margins still
+   * cap and center it above var(--maxw). */
+  width: 100%;
   max-width: var(--maxw);
   margin: 0 auto;
   /* Belt-and-braces clip so the track's negative-margin "peek" can

@@ -231,6 +231,7 @@
   overflow: hidden;
   white-space: nowrap;
   user-select: none;
+  -webkit-user-select: none;
   min-width: 0;
 }
 

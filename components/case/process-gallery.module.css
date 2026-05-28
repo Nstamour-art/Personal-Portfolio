@@ -52,6 +52,33 @@
   overflow: hidden;
 }
 
+/* Bottom scrim — keeps the caption (var(--fg-2) / var(--muted), both
+ * light-ish tones) legible when an uploaded process image happens to
+ * have a bright lower half. Tied to --bg via color-mix so the scrim
+ * harmonizes with the page chrome instead of reading as a generic
+ * black band; 4 stops approximate an ease curve so the falloff looks
+ * soft rather than a hard ramp. pointer-events:none so the click-to-
+ * expand affordance underneath stays interactive; z-index sits above
+ * the image but below .caption (z-index:2) and ExpandableMedia's
+ * corner controls (z-index:3+). */
+.gimg::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40%;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--bg) 88%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 55%, transparent) 35%,
+    color-mix(in srgb, var(--bg) 22%, transparent) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
 .caption {
   position: absolute;
   bottom: 12px;

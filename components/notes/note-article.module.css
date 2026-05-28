@@ -112,6 +112,16 @@
   justify-content: flex-start;
 }
 
+/* The shared <Markdown> primitive caps itself at `max-width: 65ch` for
+ * line-length readability (used by case studies etc.). On notes pages
+ * the body should fill the same 760px column as the title and cover
+ * image, so we override the cap *here* — locally scoped, so the cap
+ * still applies everywhere else Markdown is used. */
+.bodyWrap > div {
+  max-width: none;
+  width: 100%;
+}
+
 /* Prev/Next panel grid (similar to case study) */
 .next {
   max-width: 760px;
