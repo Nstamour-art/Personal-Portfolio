@@ -1,3 +1,19 @@
 {
-  "rows": []
+  "rows": [
+    {
+      "year": "2011",
+      "title": "Best 3D Animation",
+      "source": "Toronto International Student Animation Festival"
+    },
+    {
+      "year": "2012",
+      "title": "Winner in Sony Ziris Competition",
+      "source": "Digifest and Sony Centre Toronto"
+    },
+    {
+      "year": "2015",
+      "title": "Nominated - Best 3rd year Cinematography",
+      "source": "Cinesiege"
+    }
+  ]
 }
