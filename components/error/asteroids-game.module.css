@@ -150,7 +150,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* `safe center` keeps the card vertically centered when it fits,
+   * but falls back to `start` if the card is taller than the stage
+   * (small mobile, landscape phones) so the top of the card stays
+   * visible and scroll reveals the bottom — instead of the
+   * eyebrow + title being clipped above the visible area while the
+   * button is centered. */
+  justify-content: safe center;
   padding: 32px;
   background: radial-gradient(
     ellipse at center,
@@ -159,6 +165,11 @@
   );
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
+  /* Safety net: on very short viewports (landscape phones, height-
+   * constrained desktop tabs) the overlay card can exceed the
+   * canvas. Allow vertical scroll so the button is always reachable
+   * rather than getting clipped by `.stage`'s overflow:hidden. */
+  overflow-y: auto;
 }
 
 /* Constrained text column inside the overlay so the lede doesn't span
@@ -266,6 +277,56 @@
 .overlayScoreSep {
   color: var(--muted);
   margin: 0 2px;
+}
+
+/* Mobile sizing for the overlay card.
+ *
+ * The canvas drops to a 1:1 aspect on ≤720, so on a 360-wide viewport
+ * the stage is ~310×310 — generous for gameplay but tight for an
+ * editorial card (eyebrow + display title + 5-line lede + button +
+ * footnote). Without this block the desktop-sized type stack
+ * overflows the stage and the button gets clipped behind
+ * `.stage`'s overflow:hidden.
+ *
+ * The override pares everything down by ~20–35%, keeps the editorial
+ * hierarchy intact, and removes per-element max-widths so each
+ * element wraps against the actual available width rather than a
+ * fixed ch column. */
+@media (max-width: 720px) {
+  .overlay {
+    padding: 20px 18px;
+  }
+  .overlayCard {
+    gap: 10px;
+    max-width: 100%;
+  }
+  .overlayEyebrow {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+  }
+  .overlayTitle {
+    font-size: clamp(22px, 6.4vw, 30px);
+    max-width: 100%;
+    line-height: 1.05;
+  }
+  .overlayLede {
+    font-size: 13px;
+    line-height: 1.45;
+    max-width: 100%;
+  }
+  .overlayBtn {
+    margin-top: 4px;
+    padding: 11px 22px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+  .overlayFootnote {
+    font-size: 10px;
+  }
+  .overlayScore {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
 }
 
 /* ─── Persistent control strip ─────────────────────────────────────── */

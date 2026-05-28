@@ -110,6 +110,18 @@ export function CustomCursor() {
      * separate spring required for the rope to read. */
     const LABEL_DX = 32;
     const LABEL_DY = 34;
+    /* Viewport edge buffer (px). The label flips to the opposite
+     * side of the cursor when its rest box would otherwise clip
+     * past this distance from the viewport edge. Keeping it at 8
+     * gives the pill a tiny visible breathing strip from the
+     * window frame on every side. */
+    const EDGE_MARGIN = 8;
+    /* Last-measured label box. Re-measured on text changes (rare
+     * — only on hover transitions). Seeded with a sensible
+     * fallback so the first frame before any text is set still
+     * does sane edge math. */
+    let labelW = 90;
+    let labelH = 28;
 
     /* ─── UNIFIED ROPE + LABEL PHYSICS ─────────────────────────
      *
@@ -168,16 +180,29 @@ export function CustomCursor() {
       }
     }
 
-    /* Constant segment length — the rope's natural rest length is
-     * fixed (straight-line distance from chevron back to label
-     * rest × slack). The constraint chain enforces this each
-     * frame, so the rope can curve and twist but can't lengthen
-     * or shorten. That makes the chain feel like an actual
-     * physical object rather than a stretchy rubber band. */
-    const restRopeLen = Math.sqrt(
+    /* Adaptive segment length — base case matches the straight-
+     * line distance from chevron-back to default label rest (×
+     * slack). When the label flips to a different quadrant
+     * (right/bottom edges), the rest distance becomes much larger
+     * because labelW/H now factor in, so we lerp SEG_LEN up to
+     * support that distance and back down once the cursor moves
+     * away from the edge. Lerping (rather than swapping
+     * instantly) makes the rope visually extend / retract over a
+     * handful of frames instead of popping. With a fixed SEG_LEN
+     * the constraint chain physically prevents the label from
+     * reaching a far rest target — that's what caused earlier
+     * edge-flips to clip past the viewport: the label was
+     * mathematically aimed at the flipped position but the rope
+     * couldn't stretch enough to actually get it there. */
+    const DEFAULT_REST_LEN = Math.sqrt(
       (LABEL_DX - CHEVRON_BACK_X) ** 2 + (LABEL_DY - CHEVRON_BACK_Y) ** 2,
     );
-    const SEG_LEN = (restRopeLen * ROPE_SLACK) / (ROPE_NODES - 1);
+    const DEFAULT_SEG_LEN = (DEFAULT_REST_LEN * ROPE_SLACK) / (ROPE_NODES - 1);
+    /** Smoothing rate for SEG_LEN convergence per frame. 0.18 ≈ a
+     * few hundred ms to fully extend on a flip — fast enough not
+     * to feel laggy, slow enough not to pop. */
+    const SEG_LERP = 0.18;
+    let SEG_LEN = DEFAULT_SEG_LEN;
 
     /* Pointer source of truth + state derivation. Text-field
      * detection runs regardless of data-cursor so inputs always
@@ -218,6 +243,20 @@ export function CustomCursor() {
       }
       if (labelTextRef.current && labelTextRef.current.textContent !== label) {
         labelTextRef.current.textContent = label;
+        /* Re-measure the pill on every text change so the
+         * edge-flip math uses the actual rendered width/height
+         * for THIS label, not a stale value from the previous
+         * one. getBoundingClientRect forces a layout flush but
+         * we only fire this on hover transitions (a handful of
+         * times per minute, tops), so the cost is negligible.
+         * An empty label collapses the pill to ~0 — keep the
+         * fallback when the text is empty so the math doesn't
+         * regress when the cursor is in the default state. */
+        if (labelRef.current && label) {
+          const r = labelRef.current.getBoundingClientRect();
+          if (r.width > 0) labelW = r.width;
+          if (r.height > 0) labelH = r.height;
+        }
       }
     };
 
@@ -267,12 +306,78 @@ export function CustomCursor() {
        *    position relative to the cursor. This is the only
        *    thing telling the label where it "wants" to be —
        *    without it, the chain would just drift wherever the
-       *    last constraint pass happened to put it. */
+       *    last constraint pass happened to put it.
+       *
+       *    Viewport-edge flip: by default the label sits at the
+       *    lower-right (cursor + LABEL_DX/DY). When the cursor
+       *    nears the right edge, that rest position would push
+       *    the pill off-screen — so we mirror the X offset so
+       *    the label appears to the LEFT of the cursor. Same
+       *    story for the bottom edge with the Y axis. Because
+       *    the verlet rope is the only thing moving the label
+       *    and LAST_NODE_PULL is low (0.1), the transition is
+       *    naturally smooth: the rest target jumps but the
+       *    label physically swings around the cursor over
+       *    several frames rather than teleporting. */
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      let effDX = LABEL_DX;
+      let effDY = LABEL_DY;
+      if (cx + LABEL_DX + labelW + EDGE_MARGIN > vw) {
+        // Right edge: flip horizontally so pill sits to the LEFT.
+        effDX = -LABEL_DX - labelW;
+      }
+      if (cy + LABEL_DY + labelH + EDGE_MARGIN > vh) {
+        // Bottom edge: flip vertically so pill sits ABOVE.
+        effDY = -LABEL_DY - labelH;
+      }
+      // Guard against the (rare) opposite edges — if the flipped
+      // position would itself clip the top/left, fall back to the
+      // default. Realistic only in a viewport narrower or shorter
+      // than the label itself; included so the math never goes
+      // pathological on tiny windows.
+      if (cx + effDX < EDGE_MARGIN) effDX = LABEL_DX;
+      if (cy + effDY < EDGE_MARGIN) effDY = LABEL_DY;
+
+      /* Resize the rope to fit the current effective offset. The
+       * constraint chain enforces SEG_LEN each frame, so if SEG_LEN
+       * is too short the label can't reach the flipped rest target.
+       * Compute the desired SEG_LEN from the current
+       * chevron-back-to-label-rest distance (×slack/segments) and
+       * lerp toward it so the rope smoothly grows on flip and
+       * shrinks back when the cursor returns to the interior. */
+      const desiredRestLen = Math.sqrt(
+        (effDX - CHEVRON_BACK_X) ** 2 + (effDY - CHEVRON_BACK_Y) ** 2,
+      );
+      const desiredSegLen =
+        (Math.max(desiredRestLen, DEFAULT_REST_LEN) * ROPE_SLACK) /
+        (ROPE_NODES - 1);
+      SEG_LEN += (desiredSegLen - SEG_LEN) * SEG_LERP;
+
       const last = rope[ROPE_NODES - 1]!;
-      const restX = cx + LABEL_DX;
-      const restY = cy + LABEL_DY;
+      const restX = cx + effDX;
+      const restY = cy + effDY;
       last.x += (restX - last.x) * LAST_NODE_PULL;
       last.y += (restY - last.y) * LAST_NODE_PULL;
+
+      /* Dynamic rope length. The default SEG_LEN sizes the rope for
+       * the default lower-right rest position (~47 px from the pin).
+       * When the label is flipped to the opposite quadrant the rest
+       * target sits ~110 px from the pin and the default rope can't
+       * physically reach — the constraint pass would clamp the label
+       * back toward the cursor, leaving it half off-screen. Recompute
+       * the per-segment length each frame so the rope stretches just
+       * enough to deliver the label to its (in-bounds) rest position.
+       * The Math.max with the default ensures the rope never gets
+       * SHORTER than its design length, so the resting curve still
+       * has the slack/friction it needs to feel hand-tied. */
+      const pinX = rope[0]!.x;
+      const pinY = rope[0]!.y;
+      const restDist = Math.sqrt(
+        (restX - pinX) ** 2 + (restY - pinY) ** 2,
+      );
+      const requiredSegLen = (restDist * ROPE_SLACK) / (ROPE_NODES - 1);
+      const effSegLen = Math.max(SEG_LEN, requiredSegLen);
 
       /* 3. Pin node 0 to the back of the chevron — the rope
        *    visibly emits from there on the pointer. */
@@ -292,7 +397,7 @@ export function CustomCursor() {
           const sdx = b.x - a.x;
           const sdy = b.y - a.y;
           const sd = Math.sqrt(sdx * sdx + sdy * sdy) || 1e-4;
-          const diff = (sd - SEG_LEN) / sd;
+          const diff = (sd - effSegLen) / sd;
           const ox = sdx * 0.5 * diff;
           const oy = sdy * 0.5 * diff;
 
