@@ -131,9 +131,22 @@
   margin-top: 4px;
 }
 
+/* .arrow is a flex item inside .foot alongside the title/sub block.
+ * Without flex-shrink: 0 the default flex-shrink:1 lets the flex
+ * algorithm compress its width below 36px whenever the title is long
+ * enough that the row runs out of space — at which point the height
+ * stays at 36px and the border-radius:50% renders a vertical oval
+ * instead of a circle. flex-basis:auto + flex-shrink:0 forces all
+ * row-level shrinking to land on the title block (which can wrap to
+ * extra lines), keeping the button perfectly round regardless of
+ * tile width or title length. The explicit min-* values are belt-
+ * and-suspenders for any future container-query placement. */
 .arrow {
+  flex: 0 0 36px;
   width: 36px;
   height: 36px;
+  min-width: 36px;
+  min-height: 36px;
   border: 1px solid var(--line-2);
   background: rgba(14, 17, 23, 0.4);
   border-radius: 50%;
@@ -157,9 +170,20 @@
 .s8 { grid-column: span 8; grid-row: span 4; }
 .sfill { grid-column: 1 / -1; grid-row: span 4; }
 
+/* Tablet + mobile: the mosaic collapses to a single column (see
+ * mosaic.module.css), so each tile's grid-column/grid-row spans
+ * become meaningless — explicitly reset every variant to span the
+ * single available column with auto rows, then bind a uniform
+ * aspect-ratio so the heights stay consistent regardless of which
+ * featured size the desktop version assigned. 16/10 mirrors the
+ * home strip's featured-card ratio so the work index reads as the
+ * same visual language across pages. */
 @media (max-width: 1080px) {
-  .s1, .s4, .s8 { grid-column: span 6; grid-row: span 5; }
-  .s2, .s5, .s6 { grid-column: span 3; grid-row: span 4; }
-  .s3, .s7      { grid-column: span 3; grid-row: span 4; }
-  .sfill        { grid-column: 1 / -1; grid-row: span 4; }
+  .tile {
+    aspect-ratio: 16 / 10;
+  }
+  .s1, .s2, .s3, .s4, .s5, .s6, .s7, .s8, .sfill {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
 }

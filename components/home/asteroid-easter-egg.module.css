@@ -1,0 +1,164 @@
+/* Discovery hook for the /lost-in-space asteroid game. The component is
+ * a fixed-position floating link in the bottom-right of the home page —
+ * an irregular wireframe asteroid that tumbles slowly at rest and spins
+ * energetically on hover, with a mono-caps hint that slides in from
+ * under the icon to clue the visitor in. Clicking navigates to a 404-
+ * triggering URL whose name matches the destination page's title, so
+ * the experience reads as "huh, an easter egg" rather than "this link
+ * is broken".
+ *
+ * Stacking:
+ *   - z-index 60 places this above the announcement bar (50) and
+ *     normal page content, but below the nav rail (100), the mobile
+ *     drawer overlay (99 — sits above z:60? no — see below), the
+ *     route-change curtain (999), and the custom cursor (~max int).
+ *   - Hiding behind the route-change curtain is intentional: when the
+ *     user clicks the asteroid the curtain wipes across before the
+ *     destination paints, so the icon disappears smoothly with the
+ *     rest of the home page chrome rather than ghosting on top.
+ *
+ * Positioning:
+ *   - Fixed bottom-right of viewport. Distance tuned so the icon does
+ *     not collide with the side nav rail on the left or the colophon
+ *     column on the right when the footer scrolls into view; even when
+ *     it does sit over the footer, it's small and clearly an overlay.
+ *
+ * Layout strategy for the hint label:
+ *   - The hint is absolutely positioned to the LEFT of the icon
+ *     (right: 100% on the hint, with margin-right for the gap). This
+ *     means the icon itself is a tight 56×56 hit target regardless of
+ *     whether the hint is visible — no reserved layout space, no
+ *     content-driven container width.
+ *   - Enter transition: hint starts 8px to the right of resting and
+ *     fades up. On hover it slides back into place. The motion reads
+ *     as the label emerging from beneath the icon rather than sliding
+ *     in from off-screen, which feels less like an ad and more like a
+ *     piece of UI revealing its intent.
+ *
+ * Motion:
+ *   - The idle animation is a slow continuous rotation (24s per full
+ *     turn). Slow enough that it's not distracting but fast enough
+ *     that peripheral vision catches the motion and draws attention.
+ *   - On hover/focus, the rotation kicks up to 2s/turn — same
+ *     direction so the speed-up reads as "wake up" rather than a
+ *     direction reversal. CSS `animation` reassignment cleanly
+ *     swaps the timing without snapping to 0deg.
+ *   - prefers-reduced-motion: reduce kills BOTH animations and any
+ *     transition on transform, leaving only opacity transitions for
+ *     the hint (which are accessibility-safe — see WCAG 2.3.3).
+ */
+.root {
+  position: fixed;
+  right: clamp(16px, 2.4vw, 28px);
+  bottom: clamp(16px, 2.4vw, 28px);
+  z-index: 60;
+
+  width: 56px;
+  height: 56px;
+  display: block;
+
+  text-decoration: none;
+  color: inherit;
+  /* The fixed-position link sits over the footer when scrolled to
+   * the bottom of the home page. A subtle drop shadow lifts the
+   * icon off whatever background is behind it without needing a
+   * solid plate, which would clash with the wireframe aesthetic. */
+  filter: drop-shadow(0 4px 16px color-mix(in srgb, var(--bg) 70%, transparent));
+}
+
+.root:focus-visible {
+  outline: none;
+}
+.root:focus-visible .asteroid {
+  stroke: var(--accent);
+}
+.root:focus-visible .hint {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+.asteroid {
+  display: block;
+  width: 100%;
+  height: 100%;
+  stroke: var(--fg);
+  stroke-width: 1.5;
+  fill: none;
+  /* Idle rotation. 24s/turn = ~15deg/sec which is right at the edge
+   * of peripheral-vision detectability without being annoying. */
+  animation: drift 24s linear infinite;
+  transform-origin: 50% 50%;
+  transition: stroke 220ms ease;
+  /* Round focus ring even though the shape is an irregular polygon —
+   * matches how the in-game asteroids feel like roughly circular
+   * objects. */
+  border-radius: 50%;
+}
+
+/* When user hovers/focuses the wrapper, the asteroid kicks into a
+ * faster spin AND turns accent-colored. Restart-from-current-angle is
+ * handled by the browser when we swap animations. */
+.root:hover .asteroid,
+.root:focus-visible .asteroid {
+  animation: drift 2s linear infinite;
+  stroke: var(--accent);
+}
+
+.hint {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  margin-right: 14px;
+  transform: translateY(-50%) translateX(8px);
+
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--fg-2);
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.root:hover .hint {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+@keyframes drift {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .asteroid,
+  .root:hover .asteroid,
+  .root:focus-visible .asteroid {
+    animation: none;
+  }
+  .hint {
+    transition: opacity 220ms ease;
+  }
+}
+
+/* Tighten target size on the smallest phones — at 56px the icon
+ * starts to feel oversized against single-column tiles, and shrinking
+ * to 48px keeps it comfortably above the 44px iOS touch-target floor
+ * while reading as "secondary action / hint", not "primary CTA". */
+@media (max-width: 480px) {
+  .root {
+    width: 48px;
+    height: 48px;
+  }
+  .hint {
+    font-size: 10.5px;
+    margin-right: 12px;
+  }
+}

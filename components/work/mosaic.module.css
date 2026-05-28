@@ -6,9 +6,18 @@
   gap: 18px;
 }
 
+/* On tablet and mobile the 6-col paired layout breaks down: s2/s3/s5/
+ * s6/s7 sit at 3 cols (~half the viewport), which means narrow tiles,
+ * cramped titles, and an overall "miniature desktop" feel rather than
+ * a touch-first layout. Collapse the whole mosaic to a single column
+ * and let row heights flow from each tile's intrinsic aspect-ratio
+ * (set on .tile in tile.module.css) — every project gets a uniform,
+ * substantial card the user can scroll through one at a time. The
+ * larger gap matches the heavier visual weight of full-width tiles. */
 @media (max-width: 1080px) {
   .mosaic {
-    grid-template-columns: repeat(6, 1fr);
-    grid-auto-rows: 80px;
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+    gap: 24px;
   }
 }

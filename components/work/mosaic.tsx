@@ -41,7 +41,7 @@ export function Mosaic() {
             project={p}
             index={PROJECTS.indexOf(p) + 1}
             span={spanFor(i, filtered.length)}
-            sizes="(max-width: 1080px) 50vw, 33vw"
+            sizes="(max-width: 1080px) 100vw, 50vw"
           />
         ))}
       </div>

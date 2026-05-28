@@ -95,7 +95,9 @@ export function ProcessGallery({ project }: ProcessGalleryProps) {
                 <span>
                   fig. {fig} — {step.label}
                 </span>
-                <span className={styles.note}>{step.note}</span>
+                <span className={styles.note} title={step.note}>
+                  {truncateForOverlay(step.note)}
+                </span>
               </div>
             </div>
           );
@@ -121,4 +123,35 @@ function procRotation(i: number): ProceduralKey | undefined {
   if (i === 0) return undefined;
   if (i === 1) return 'ph-illo';
   return 'ph-code';
+}
+
+/* Truncate the gallery overlay's right-side note to keep captions
+ * compact over the image — long descriptions become a 4+ line wall of
+ * mono caps that dominates the tile and obscures the artwork. The
+ * lightbox still receives the full untruncated text (built from
+ * step.note above), so clicking through always reveals the complete
+ * description.
+ *
+ * Threshold is ~100 characters because that's the point where the
+ * description starts wrapping to a third line at the default tile
+ * width. We try to break on the last word boundary within a reasonable
+ * window (back up no more than ~15 chars) so we don't cut mid-word.
+ * Trailing punctuation is stripped before appending the ellipsis so we
+ * don't render awkward sequences like "model.…" or "model,…".
+ *
+ * A single Unicode ellipsis character (U+2026) is used rather than
+ * three dots — typographically cleaner and unambiguous on copy. The
+ * `title` attribute on the rendered span carries the full text so
+ * users on pointing devices can hover to see the complete note. */
+const OVERLAY_NOTE_MAX = 100;
+
+function truncateForOverlay(text: string): string {
+  if (text.length <= OVERLAY_NOTE_MAX) return text;
+  const slice = text.slice(0, OVERLAY_NOTE_MAX);
+  const lastSpace = slice.lastIndexOf(' ');
+  /* If the last word is unusually long (no space found in the back ~15
+   * chars of the window) fall back to a hard cut at the threshold so
+   * we don't leave the ellipsis floating after a long URL or token. */
+  const cut = lastSpace > OVERLAY_NOTE_MAX - 15 ? lastSpace : OVERLAY_NOTE_MAX;
+  return text.slice(0, cut).replace(/[\s.,;:!?—-]+$/, '') + '…';
 }

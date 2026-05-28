@@ -54,49 +54,57 @@ const ASTEROID_SPEED: Record<Size, [number, number]> = {
 
 const HIGH_SCORE_KEY = 'nsa.lost-in-space.hs';
 
-/* Asteroid labels — anti-patterns and craft-killers across motion / 3D /
- * illustration / AI workflows / code / process. Picked from a long pool
- * at spawn time so wave-to-wave variety is high; children of a split
- * asteroid inherit the parent's word (classic Asteroids feel), which
- * means "SCOPE CREEP" breaks into smaller "SCOPE CREEP" shards.
+/* Asteroid labels — light, universally-recognized annoyances and craft
+ * clichés the player gets to vaporize on the way back to the home page.
+ * Picked from a long pool at spawn time so wave-to-wave variety is high;
+ * children of a split asteroid inherit the parent's word (classic
+ * Asteroids feel), which means "COMIC SANS" breaks into smaller
+ * "COMIC SANS" shards.
  *
- * Curation rule: every entry should read as "this person knows what's
- * bad and avoids it" — i.e. craft signals. Avoid anything that could
- * land as anti-collaboration (Meetings, Revisions), anti-client (Bad
- * brief), anti-business (Pivot), or anti-personal-wellbeing (Burnout,
- * Crunch). The list should make a hiring manager nod, not wince.
+ * Curation rule — audience is recruiters and hiring managers, NOT
+ * fellow engineers / designers. Every entry has to be instantly legible
+ * to a non-specialist: corporate clichés (Synergy), modern annoyances
+ * (Cookie banner, Captcha), design memes (Comic Sans, Papyrus, Lens
+ * flare), 90s/2000s nostalgia jokes (Clip art, Word art), and recent
+ * AI-discourse terms (AI slop, Hallucination). Insider jargon was
+ * removed because a recruiter doesn't know what "yak shave" or
+ * "spaghetti" means out of context and the joke lands as confusion.
  *
- * Words are kept short enough to fit a medium asteroid (~10 chars at
- * 10px mono) without being trimmed by the renderer. */
+ * Also avoid anything that reads as anti-collaboration (Meetings,
+ * Revisions), anti-client (Bad brief), anti-business (Pivot), or
+ * anti-personal-wellbeing (Burnout, Crunch) — the field should make a
+ * hiring manager smile, not wince.
+ *
+ * Words are kept short enough to fit a medium asteroid (~14 chars at
+ * 10px mono is the practical ceiling — see "Cookie banner") without
+ * being trimmed by the renderer. */
 const ENEMY_WORDS = [
-  // Process / strategy
+  // Corporate / process clichés
   'Scope creep',
-  'Cargo cult',
-  'Buzzword',
   'Synergy',
-  // Code
-  'Tech debt',
-  'Boilerplate',
-  'Spaghetti',
-  'Hotfix',
-  'Friday deploy',
-  'Merge conflict',
-  'Yak shave',
-  // AI workflows
+  'Buzzword',
+  'Reply all',
+  'Doom scroll',
+  // AI discourse
   'AI slop',
   'Hallucination',
-  // Motion
-  'Linear easing',
-  // 3D
-  'N-gon',
-  // Illustration / design
+  // Design memes everyone recognizes
   'Stock photo',
-  'Auto-trace',
   'Lorem ipsum',
   'Lens flare',
   'Comic Sans',
-  'Bevel',
+  'Papyrus',
   'Beige',
+  'Clip art',
+  'Word art',
+  'Drop shadow',
+  'All caps',
+  // Modern web / UX annoyances
+  'Pop-up ad',
+  'Cookie banner',
+  'Captcha',
+  'Auto-play',
+  'Hold music',
 ] as const;
 
 type Vec = { x: number; y: number };
@@ -1010,9 +1018,9 @@ export function AsteroidsGame() {
                 </h2>
                 <p className={styles.overlayLede}>
                   The URL you tried to reach isn&apos;t on any chart. Your
-                  craft has drifted into a belt of pipeline anti-patterns —
-                  scope creep, AI slop, lens flare, linear easing, every
-                  shortcut a careful pipeline pushes back on. Blast through.
+                  craft has drifted into a belt of everyday annoyances —
+                  scope creep, AI slop, lens flare, Comic Sans, every
+                  shortcut a careful project pushes back on. Blast through.
                   Survive the field. The way home returns as you clear.
                 </p>
                 <button
