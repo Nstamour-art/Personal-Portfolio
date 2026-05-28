@@ -29,6 +29,53 @@
   overflow: hidden;
 }
 
+/* Bottom + top scrims — keep .foot (title/sub) and .top (index/
+ * disciplines) legible regardless of how bright or busy the
+ * underlying image happens to be. Matches the pattern already used
+ * on `.gimg::after` in process-gallery.module.css: tied to --bg via
+ * color-mix so the scrim harmonizes with the page chrome instead of
+ * reading as a generic black band, and 4-stop falloff approximates
+ * an ease curve so the gradient feels soft rather than a hard ramp.
+ *
+ * Scrims live INSIDE .media (z-index:1) so they sit above the
+ * placeholder/image but below .top / .foot (both z-index:2). The
+ * pseudo-elements are pointer-events:none so the Link wrapping the
+ * tile stays fully interactive. */
+.media::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 45%;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--bg) 88%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 55%, transparent) 35%,
+    color-mix(in srgb, var(--bg) 22%, transparent) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.media::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 22%;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bg) 70%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 30%, transparent) 55%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
 .top {
   position: absolute;
   left: 16px;
