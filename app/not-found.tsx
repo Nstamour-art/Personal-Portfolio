@@ -5,6 +5,7 @@ import { Footer } from '@/components/chrome/footer';
 import { NavRail } from '@/components/chrome/nav-rail';
 import { PageTransition } from '@/components/chrome/page-transition';
 import { LostInSpace } from '@/components/error/lost-in-space';
+import { getVisibleNav } from '@/lib/content';
 
 /* Global 404 — Next.js routes truly unmatched URLs to app/not-found.tsx
  * at the ROOT (it does not cascade into route groups for unmatched URLs;
@@ -22,15 +23,16 @@ export const metadata: Metadata = {
 };
 
 export default function GlobalNotFound() {
+  const nav = getVisibleNav();
   return (
     <div className="nav-rail-mode caps">
       <Announcement />
       <CustomCursor />
-      <NavRail />
+      <NavRail nav={nav} />
       <PageTransition>
         <LostInSpace />
       </PageTransition>
-      <Footer />
+      <Footer nav={nav} />
     </div>
   );
 }

@@ -1,14 +1,23 @@
 import Link from 'next/link';
-import { NAV } from '@/content/disciplines';
 import { SITE } from '@/content/site';
+import type { NavItem } from '@/lib/content';
 import { copy, template } from '@/lib/copy';
 import styles from './footer.module.css';
 
 /**
  * Site footer — SPEC §6 (footer block) + EDITORIAL.footer.
  * Server component: no client interactivity needed beyond hover/transition CSS.
+ *
+ * Receives the visible navigation list via the `nav` prop (computed
+ * by `getVisibleNav()` in the server layout). Mirrors the rail so the
+ * "Site" footer column hides the Notes link in lockstep with the rail
+ * when the notes collection is empty.
  */
-export function Footer() {
+interface FooterProps {
+  nav: NavItem[];
+}
+
+export function Footer({ nav }: FooterProps) {
   const rights = template(copy('footer.rightsTemplate', "© {name} — Folio '26"), {
     name: SITE.name,
   });
@@ -35,7 +44,7 @@ export function Footer() {
       <div className={styles.col}>
         <h5>{copy('footer.siteHead', 'Site')}</h5>
         <ul>
-          {NAV.map((n) => (
+          {nav.map((n) => (
             <li key={n.id}>
               <Link href={n.path} data-cursor="link" data-cursor-label={n.cursorLabel}>
                 {n.label}

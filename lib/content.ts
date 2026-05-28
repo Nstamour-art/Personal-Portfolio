@@ -1,7 +1,9 @@
 import { PROJECTS } from '@/content/projects';
 import { NOTES } from '@/content/notes';
-import { DISCIPLINES } from '@/content/disciplines';
+import { DISCIPLINES, NAV } from '@/content/disciplines';
 import type { DisciplineId, Note, Project } from '@/content/types';
+
+export type NavItem = (typeof NAV)[number];
 
 /* ─── Projects ─────────────────────────────────────────────────────────── */
 
@@ -100,4 +102,32 @@ export function getDisciplineLabel(id: DisciplineId | 'all'): string {
 /** How many projects match the given discipline (or 'all'). */
 export function countProjectsForDiscipline(id: DisciplineId | 'all'): number {
   return getProjectsBy(id).length;
+}
+
+/* ─── Navigation ───────────────────────────────────────────────────────── */
+
+/**
+ * Returns the navigation entries visible for the current content set.
+ *
+ * Today the only auto-hide rule is the Notes tab: when no notes are
+ * published (a freshly-cloned site, a portfolio without writing,
+ * or while every note is still in draft), the tab is dropped from
+ * both the rail and the footer so the site never advertises a
+ * section that would resolve to an empty index.
+ *
+ * Read this from the server layout (`app/(site)/layout.tsx`) and pass
+ * the result into `<NavRail>` and `<Footer>` as a prop, rather than
+ * those components importing NAV directly. This keeps the visibility
+ * rule in one place AND avoids pulling the notes module (which
+ * carries note bodies) into the NavRail client bundle.
+ *
+ * To extend: add another condition here for any other section that
+ * should auto-hide when empty (e.g. work, if you ever want a
+ * notes-only mode).
+ */
+export function getVisibleNav(): NavItem[] {
+  return NAV.filter((n) => {
+    if (n.id === 'notes' && NOTES.length === 0) return false;
+    return true;
+  });
 }

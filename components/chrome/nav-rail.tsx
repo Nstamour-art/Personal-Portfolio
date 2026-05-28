@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { NAV } from '@/content/disciplines';
 import { SITE } from '@/content/site';
+import type { NavItem } from '@/lib/content';
 import styles from './nav-rail.module.css';
 
 /**
@@ -33,8 +33,18 @@ import styles from './nav-rail.module.css';
  * content/disciplines.ts) so the custom cursor pill shows a
  * personality phrase like "The good stuff" or "Read along" on
  * hover, instead of falling back to the generic "Proceed" label.
+ *
+ * The `nav` prop is the already-filtered visibility list, computed
+ * server-side by `getVisibleNav()` in lib/content.ts. Passing it in
+ * (instead of importing NAV here) keeps the visibility rule in one
+ * place AND avoids pulling the notes module (which ships note
+ * bodies) into this client component's bundle.
  */
-export function NavRail() {
+interface NavRailProps {
+  nav: NavItem[];
+}
+
+export function NavRail({ nav }: NavRailProps) {
   const pathname = usePathname();
   const activeId = navIdForPath(pathname);
 
@@ -99,7 +109,7 @@ export function NavRail() {
         </Link>
 
         <div className={styles.links}>
-          {NAV.map((n) => {
+          {nav.map((n) => {
             const isActive = activeId === n.id;
             return (
               <Link
@@ -159,7 +169,7 @@ export function NavRail() {
         />
 
         <ul className={styles.overlayLinks}>
-          {NAV.map((n) => {
+          {nav.map((n) => {
             const isActive = activeId === n.id;
             return (
               <li key={n.id}>
