@@ -3,11 +3,12 @@
     {
       "h": "Motion",
       "items": [
-        "After Effects",
-        "Cavalry",
-        "Lottie pipelines",
-        "Broadcast templating",
-        "Title sequences"
+        "Adobe After Effects",
+        "Blender",
+        "DaVinci Resolve",
+        "Avid Media Composer",
+        "Adobe Illustrator",
+        "Figma Weave"
       ]
     },
     {
@@ -15,7 +16,7 @@
       "items": [
         "Cinema 4D",
         "Blender",
-        "Octane / Redshift",
+        "Renderman / Redshift",
         "Substance suite",
         "Hard-surface modelling"
       ]
@@ -26,7 +27,7 @@
         "Claude pipelines",
         "Prompt eval",
         "TypeScript prototypes",
-        "Figma plugin work",
+        "Python",
         "Generative tools"
       ]
     },
@@ -35,9 +36,9 @@
       "items": [
         "Procreate",
         "Character design",
-        "Environment art",
-        "World bibles",
-        "Editorial illos"
+        "Design",
+        "Figma",
+        "Adobe Photoshop"
       ]
     }
   ]
