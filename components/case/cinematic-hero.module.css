@@ -18,13 +18,35 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 130px var(--pad) 48px;
-  background: linear-gradient(
-    180deg,
-    rgba(14, 17, 23, 0.7) 0%,
-    rgba(14, 17, 23, 0) 30%,
-    rgba(14, 17, 23, 0) 50%,
-    rgba(14, 17, 23, 0.85) 100%
-  );
+  /* Two stacked scrims (one image, comma-separated linear-gradients):
+   *   1. top — covers ~22% from the top, holds the Back link + counter
+   *   2. bottom — covers ~55% from the bottom, holds title + meta grid
+   *
+   * Both gradients use 4-stop ease curves so the falloff reads as a
+   * soft photographic vignette rather than a hard band, and they're
+   * tied to --bg via color-mix so the scrim harmonizes with the page
+   * chrome at every theme. The middle of the image stays fully
+   * uncovered so the artwork can breathe. Same pattern as
+   * tile.module.css and process-gallery.module.css.
+   *
+   * Bottom is pulled stronger than top because the title can run to
+   * clamp(48, 8vw, 128px) — large display type over high-key imagery
+   * needs real contrast support, not just a hint of shadow. */
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--bg) 78%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 45%, transparent) 35%,
+      color-mix(in srgb, var(--bg) 18%, transparent) 70%,
+      transparent 100%
+    ) top / 100% 22% no-repeat,
+    linear-gradient(
+      to top,
+      color-mix(in srgb, var(--bg) 92%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 65%, transparent) 35%,
+      color-mix(in srgb, var(--bg) 28%, transparent) 70%,
+      transparent 100%
+    ) bottom / 100% 55% no-repeat;
   pointer-events: none;
   opacity: 1;
   transition: opacity 320ms ease;
