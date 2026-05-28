@@ -18,10 +18,16 @@
   position: relative;
   width: 100%;
   /* Cap the playfield so it feels like an embedded mini-game instead of
-   * a page-replacing takeover. At 16/9 a 1040px width gives a ~585px
-   * canvas — generous to play in, while leaving comfortable room for the
-   * control strip + recovery footer above the fold on a 1080p viewport. */
-  max-width: 1040px;
+   * a page-replacing takeover. At 16/9 this width gives a ~702px tall
+   * canvas — generous to play in, and large enough that the idle and
+   * gameover overlays (eyebrow + display-grade title + lede + button +
+   * footnote) fit inside the stage without being clipped by .stage's
+   * overflow:hidden on very wide viewports. Still well under the site's
+   * --maxw (1640px) so the game reads as embedded, not page-replacing.
+   * On 1080p viewports the canvas height (702px) + control strip (~48px)
+   * + recovery footer (~150px) still leaves comfortable headroom above
+   * the fold. */
+  max-width: 1248px;
   margin: 0 auto;
   user-select: none;
   -webkit-user-select: none;
