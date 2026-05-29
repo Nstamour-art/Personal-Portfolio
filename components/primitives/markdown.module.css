@@ -13,7 +13,16 @@
   display: flow-root;
 }
 
-.md > * + * {
+/* Lobotomized-owl spacing between adjacent blocks inside the article.
+ *
+ * Uses `:not(:first-child)` instead of the classic `* + *` so the rule
+ * has specificity (0,2,0) — high enough to outrank the per-element
+ * `margin: 0` resets (`.p`, `.ul`, `.ol`) declared later in this file,
+ * which would otherwise shadow the top margin and collapse paragraphs
+ * into one continuous wall of text. With this in place, each block —
+ * paragraphs, lists, figures, blockquotes — gets a clear vertical gap
+ * regardless of which reset rule loaded last. */
+.md > *:not(:first-child) {
   margin-top: 1.1em;
 }
 
@@ -26,11 +35,19 @@
   letter-spacing: -0.018em;
   font-weight: 500;
   line-height: 1.15;
-  margin-top: 2em;
   /* Always break out of any active float so section starts read cleanly.
    * Without this, a tall float-right figure at the end of one section
    * could push the next h2/h3 down beside it instead of below. */
   clear: both;
+}
+
+/* Heading top margin is declared with the descendant combinator so its
+ * specificity (0,2,0) matches the lobotomized owl above; otherwise the
+ * owl's default 1.1em would shadow the heading's intentional larger gap
+ * and section breaks would look cramped. Placed after the owl in source
+ * order so equal-specificity ties resolve in the heading's favour. */
+.md .h {
+  margin-top: 2em;
 }
 
 .h1 {
