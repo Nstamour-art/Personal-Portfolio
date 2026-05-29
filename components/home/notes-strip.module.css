@@ -1,5 +1,12 @@
 .strip {
   padding: 24px var(--pad) 80px;
+  /* `width: 100%` is load-bearing for the same reason the featured strip
+   * sets it: <main> is a flex column, and `margin: 0 auto` below cancels
+   * flex stretch. Without an explicit width the strip sizes to its rows'
+   * max-content (a short note title), which made Notes render ~600px
+   * narrower than Recent projects above it. Fill the column; --maxw +
+   * auto margins still cap and center it. */
+  width: 100%;
   max-width: var(--maxw);
   margin: 0 auto;
 }

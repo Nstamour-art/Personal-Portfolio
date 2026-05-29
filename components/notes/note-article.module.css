@@ -137,6 +137,21 @@
   }
 }
 
+/* Single-panel variant — used when there aren't enough notes for a real
+ * prev/next (1 note total, or 2 with both arrows wrapping to the same
+ * other note). Collapses to a single full-width column so the panel
+ * doesn't leave an empty 1fr slot beside it. */
+.nextSolo {
+  grid-template-columns: 1fr;
+}
+
+.panelSolo {
+  /* Slightly shorter than the dual panels — the solo CTA only carries
+   * one column of content, so the 160px min-height looks underfilled.
+   * 120px matches the visual weight of a single populated panel. */
+  min-height: 120px;
+}
+
 .panel {
   position: relative;
   padding: 28px;

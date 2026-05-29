@@ -5,6 +5,12 @@
   letter-spacing: -0.003em;
   text-wrap: pretty;
   max-width: 65ch;
+  /* `flow-root` creates a block-formatting context so floated figures
+   * (magazine layout) are contained by the article — without it, a
+   * float sitting near the end of the body would poke past the next
+   * UI section. Sibling paragraphs still wrap around the float as
+   * intended; flow-root only changes how the parent SIZES itself. */
+  display: flow-root;
 }
 
 .md > * + * {
@@ -21,6 +27,10 @@
   font-weight: 500;
   line-height: 1.15;
   margin-top: 2em;
+  /* Always break out of any active float so section starts read cleanly.
+   * Without this, a tall float-right figure at the end of one section
+   * could push the next h2/h3 down beside it instead of below. */
+  clear: both;
 }
 
 .h1 {
@@ -130,4 +140,132 @@
   height: 1px;
   background: var(--line);
   margin: 2.4em 0;
+}
+
+.figure {
+  margin: 1.8em 0;
+  max-width: 100%;
+}
+
+.figureImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.figcaption {
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.55;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.figcaption strong,
+.figcaption em {
+  color: var(--fg-2);
+  font-weight: 500;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * Magazine-style float layouts.
+ *
+ * Authored via the `magazineImage` Keystatic wrapper component (see
+ * keystatic.config.ts) with layout = float-right | float-left.
+ * Paragraphs between the figure and the next heading wrap around it,
+ * mimicking a magazine pull-out. Headings clear floats (see .h above)
+ * and the article container is a BFC (.md `flow-root`) so any tail
+ * float doesn't escape.
+ *
+ * Width is capped at min(50%, 360px) for two reasons: 50% keeps the
+ * remaining text column readable (~30ch), and 360px stops oversized
+ * screenshots from dominating the page when the column is wide. The
+ * lower bound is the image's intrinsic width — small images stay
+ * small instead of being upscaled, which is the entire point.
+ *
+ * VERTICAL ALIGNMENT — the figure's top edge must sit AT or ABOVE the
+ * top of the wrap paragraph's first line. If it falls inside the
+ * first line's vertical span (even by a pixel), browsers position
+ * line 1 based on its top and ignore the float for that line — line 1
+ * then runs at full column width and only lines 2+ wrap, leaving the
+ * figure looking detached and the wrap visibly off-by-one-line.
+ *
+ * `margin-top: -0.15em` pulls the figure up by roughly the font's
+ * internal leading so its top aligns with the cap-height of the
+ * first letter beside it (a standard magazine alignment). The
+ * negative value is small enough not to overlap the previous
+ * paragraph's descenders in practice; with the previous block being
+ * a normal paragraph (line-height 1.6), there's ~0.3em of slack
+ * below the descender line. */
+
+.figureFloatRight,
+.figureFloatLeft {
+  /* `min()` lets small images keep their intrinsic size while
+   * capping large ones at half the column or 360px, whichever is
+   * smaller. Floats shrink-to-fit by default, so the figure box
+   * tracks its contents (the image at intrinsic width). */
+  max-width: min(50%, 360px);
+  margin: -0.15em 0 1em;
+}
+
+/* Inside a float, override the global figure-image stretch.
+ * The block treatment uses `width: 100%` so screenshots fill the
+ * 65ch column, but for floats we want the image to render at its
+ * intrinsic size (capped by the figure's max-width). Without this,
+ * a 331px-wide screenshot would upscale to fill the 360px float box
+ * and lose sharpness on retina displays. */
+.figureFloatRight .figureImg,
+.figureFloatLeft .figureImg {
+  width: auto;
+  max-width: 100%;
+}
+
+.figureFloatRight {
+  float: right;
+  margin-left: 28px;
+  /* `clear: right` means a second right-float starts below the
+   * first instead of stacking horizontally. Two right-floats in
+   * quick succession therefore form a vertical column of images
+   * down the right side, the way magazine columns of pull-quotes
+   * do. */
+  clear: right;
+  /* `shape-outside: margin-box` follows the figure's rectangular
+   * outline including the left/bottom margins; without it the text
+   * would crowd the figure's edge. */
+  shape-outside: margin-box;
+}
+
+.figureFloatLeft {
+  float: left;
+  margin-right: 28px;
+  clear: left;
+  shape-outside: margin-box;
+}
+
+/* On narrow screens (typically phones), drop the float and let the
+ * figure behave like a regular block image: full column width, the
+ * image inside stretches to fill so it aligns with the surrounding
+ * screenshots in the article. Trying to wrap text around a half-
+ * column image at <640px reads as squished on both sides. */
+@media (max-width: 640px) {
+  .figureFloatRight,
+  .figureFloatLeft {
+    float: none;
+    max-width: 100%;
+    width: auto;
+    margin: 1.8em 0;
+    clear: both;
+  }
+  /* Cancel the desktop override that kept the image at its intrinsic
+   * size — on mobile we want the image to fill the column, matching
+   * the layout of regular block-level figures. */
+  .figureFloatRight .figureImg,
+  .figureFloatLeft .figureImg {
+    width: 100%;
+  }
 }

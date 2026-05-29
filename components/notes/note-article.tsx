@@ -71,36 +71,63 @@ export function NoteArticle({ note }: NoteArticleProps) {
         </div>
       </article>
 
-      <section className={styles.next}>
-        <Link
-          href={`/notes/${prev.id}`}
-          className={styles.panel}
-          data-cursor="view"
-          data-cursor-label="Previous"
-        >
-          <div className={styles.panelLabel}>← Previous note</div>
-          <div>
-            <div className={styles.panelTitle}>{prev.title}</div>
-            <div className={styles.panelMeta}>
-              {prev.kind} · {prev.date}
+      {/* When there's only one note, both getPrevNote and getNextNote
+       * wrap around and return the current note — rendering two
+       * panels that point at the same article. The same dead-end
+       * happens at total === 2 (prev and next both resolve to the
+       * single other note). In either case the dual-panel UI is
+       * misleading, so collapse to a single back-to-index CTA. The
+       * editorial loop (article ↔ index lede) reads cleaner than a
+       * fake prev/next anyway. */}
+      {prev.id === next.id ? (
+        <section className={`${styles.next} ${styles.nextSolo}`}>
+          <Link
+            href="/notes"
+            className={`${styles.panel} ${styles.panelSolo}`}
+            data-cursor="view"
+            data-cursor-label="All notes"
+          >
+            <div className={styles.panelLabel}>← Notes</div>
+            <div>
+              <div className={styles.panelTitle}>Back to the index</div>
+              <div className={styles.panelMeta}>
+                Short writing on tools, rigs and how things get made.
+              </div>
             </div>
-          </div>
-        </Link>
-        <Link
-          href={`/notes/${next.id}`}
-          className={styles.panel}
-          data-cursor="view"
-          data-cursor-label="Next note"
-        >
-          <div className={`${styles.panelLabel} ${styles.right}`}>Next note →</div>
-          <div className={styles.right}>
-            <div className={styles.panelTitle}>{next.title}</div>
-            <div className={styles.panelMeta}>
-              {next.kind} · {next.date}
+          </Link>
+        </section>
+      ) : (
+        <section className={styles.next}>
+          <Link
+            href={`/notes/${prev.id}`}
+            className={styles.panel}
+            data-cursor="view"
+            data-cursor-label="Previous"
+          >
+            <div className={styles.panelLabel}>← Previous note</div>
+            <div>
+              <div className={styles.panelTitle}>{prev.title}</div>
+              <div className={styles.panelMeta}>
+                {prev.kind} · {prev.date}
+              </div>
             </div>
-          </div>
-        </Link>
-      </section>
+          </Link>
+          <Link
+            href={`/notes/${next.id}`}
+            className={styles.panel}
+            data-cursor="view"
+            data-cursor-label="Next note"
+          >
+            <div className={`${styles.panelLabel} ${styles.right}`}>Next note →</div>
+            <div className={styles.right}>
+              <div className={styles.panelTitle}>{next.title}</div>
+              <div className={styles.panelMeta}>
+                {next.kind} · {next.date}
+              </div>
+            </div>
+          </Link>
+        </section>
+      )}
     </div>
   );
 }

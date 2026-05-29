@@ -52,12 +52,58 @@
   color: var(--accent);
 }
 
+/* Tablet + mobile — the desktop 5-column row crushes the title down
+ * to a sliver between the fixed meta / kind / arrow cells. Switch to
+ * a 2-row layout: num + meta + kind + arrow on top, title + summary
+ * spanning the full width underneath. The breakpoint matches the
+ * .head collapse above (880px) so both pieces of the page reflow at
+ * the same width. */
+@media (max-width: 1080px) {
+  .row {
+    grid-template-columns: 40px 1fr auto 24px;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      'num  meta kind arrow'
+      'body body body body';
+    column-gap: 14px;
+    row-gap: 10px;
+    align-items: center;
+  }
+  .num {
+    grid-area: num;
+    padding-top: 0;
+  }
+  .meta {
+    grid-area: meta;
+    flex-direction: row;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .kind {
+    grid-area: kind;
+    text-align: left;
+    padding-top: 0;
+  }
+  .arrow {
+    grid-area: arrow;
+    padding-top: 0;
+  }
+  .body {
+    grid-area: body;
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 720px) {
+  /* Smallest screens — drop the kind pill to free up the meta row,
+   * keep date + pinned because they're useful for scanning. */
   .row {
     grid-template-columns: 40px 1fr 24px;
-    gap: 16px;
+    grid-template-areas:
+      'num  meta arrow'
+      'body body body';
+    column-gap: 12px;
   }
-  .meta,
   .kind {
     display: none;
   }

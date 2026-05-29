@@ -1,5 +1,6 @@
 import { createElement } from 'react';
 import { collection, config, fields, singleton } from '@keystatic/core';
+import { wrapper } from '@keystatic/core/content-components';
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Keystatic schema — mirrors content/types.ts (SPEC §5).
@@ -78,6 +79,127 @@ const SPAN_OPTIONS = [
   { label: '8 — half', value: 's-8' },
   { label: 'Fill remaining', value: 's-fill' },
 ] as const;
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Magazine image — a content component for the notes body that wraps a
+ * normal Keystatic image with a layout selector (block / float-right /
+ * float-left).
+ *
+ * WHY A WRAPPER, NOT A BLOCK WITH `fields.image`:
+ * Embedding `fields.image` in a custom block's schema looks fine in
+ * TypeScript but doesn't round-trip through Keystatic — the editor's
+ * lazy asset loader populates its in-memory `otherFiles` map for
+ * top-level entry fields and inline markdown images, but custom-block
+ * image fields don't hook into that pipeline, so the image's `src`
+ * comes back as `null`, the required validation throws, and the entire
+ * tag silently fails parsing. The built-in `cloudImage` block sidesteps
+ * this by using a plain string slug field plus a `handleFile` callback.
+ *
+ * The supported pattern for "image with extra metadata" is a wrapper:
+ *   - Keystatic's NATIVE image block handles the upload, asset storage,
+ *     alt text, and caption (we already use this for every other image
+ *     in /notes — same code path).
+ *   - Our wrapper adds only the layout metadata.
+ *
+ * Disk format (in .mdoc):
+ *   {% magazineImage layout="float-right" %}
+ *   ![Alt text](/assets/notes/<slug>/foo.png "Caption text")
+ *   {% /magazineImage %}
+ *
+ * The custom markdown parser in components/primitives/markdown.tsx
+ * recognises the paired wrapper tags and applies a layout class to the
+ * inner image's <figure> element. CSS turns that into a floated wrap or
+ * a centred block depending on the layout value.
+ *
+ * Editor workflow:
+ *   1. Insert "Magazine image" from the slash menu / Insert button.
+ *   2. Pick layout from the dropdown at the top of the wrapper.
+ *   3. Add an image inside the wrapper using the regular Image button —
+ *      this uses the standard image dialog with alt + caption fields.
+ * ──────────────────────────────────────────────────────────────────── */
+const magazineImage = wrapper({
+  label: 'Magazine image',
+  description:
+    'Container that lets one image float to the side so paragraphs wrap around it. Insert this, then add a regular image inside.',
+  schema: {
+    layout: fields.select({
+      label: 'Layout',
+      description:
+        '"Block" is a full-width row (same as a regular image). "Float right" / "Float left" pull the image to one side and let the next paragraphs wrap around it (magazine-style). Floats automatically drop to full-width on mobile.',
+      options: [
+        { label: 'Block (full width, no wrap)', value: 'block' },
+        {
+          label: 'Float right (paragraphs wrap to the left)',
+          value: 'float-right',
+        },
+        {
+          label: 'Float left (paragraphs wrap to the right)',
+          value: 'float-left',
+        },
+      ],
+      defaultValue: 'float-right',
+    }),
+  },
+  /* In-editor preview. Deliberately uses plain inline styles instead of
+   * Keystatic's internal design-system imports so the config isn't
+   * coupled to dist paths. The dashed border + uppercase label mirrors
+   * the editorial aesthetic of other Keystatic custom blocks (e.g.
+   * Callout). `children` is whatever the user puts inside — typically
+   * a single image. */
+  ContentView: ({ value, children }) => {
+    const layoutLabel =
+      value.layout === 'float-right'
+        ? 'Float right'
+        : value.layout === 'float-left'
+          ? 'Float left'
+          : 'Block (full width)';
+    return createElement(
+      'div',
+      {
+        style: {
+          margin: '12px 0',
+          padding: 12,
+          border: '1px dashed rgba(122, 122, 122, 0.45)',
+          borderRadius: 6,
+          background: 'rgba(0, 0, 0, 0.02)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+        },
+      },
+      createElement(
+        'div',
+        {
+          style: {
+            display: 'flex',
+            gap: 8,
+            alignItems: 'center',
+            fontFamily:
+              'var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
+            fontSize: 10,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            color: 'rgba(122, 122, 122, 0.85)',
+          },
+        },
+        createElement('span', null, 'Magazine image'),
+        createElement(
+          'span',
+          {
+            style: {
+              padding: '2px 6px',
+              border: '1px solid rgba(122, 122, 122, 0.45)',
+              borderRadius: 3,
+              fontSize: 9,
+            },
+          },
+          layoutLabel,
+        ),
+      ),
+      createElement('div', null, children),
+    );
+  },
+});
 
 const storage =
   process.env['NODE_ENV'] === 'production'
@@ -463,7 +585,28 @@ export default config({
         body: fields.markdoc({
           label: 'Note body',
           description:
-            'Supports headings, lists, links, **bold**, *italic accent*, inline `code`, and code blocks.',
+            'Supports headings, lists, links, **bold**, *italic accent*, inline `code`, code blocks, full-width screenshots (Image button), and side-floating screenshots (Magazine image block, in the slash-insert menu).',
+          options: {
+            image: {
+              directory: 'public/assets/notes',
+              publicPath: '/assets/notes/',
+              schema: {
+                alt: fields.text({
+                  label: 'Alt text (for screen readers)',
+                  description:
+                    'Short, plain-text description of what the screenshot shows. Used by accessibility tools. Also used as the visible caption when the Caption field below is left blank.',
+                }),
+                title: fields.text({
+                  label: 'Caption (visible below the image)',
+                  description:
+                    'Editorial caption shown directly under the screenshot. Leave blank to use the Alt text as the caption.',
+                }),
+              },
+            },
+          },
+          components: {
+            magazineImage,
+          },
         }),
       },
     }),

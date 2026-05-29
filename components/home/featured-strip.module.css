@@ -80,7 +80,15 @@
 
 /* The track bleeds past the section's --pad so the right peek doesn't
  * collide with the page gutter. Inner padding restores the visual
- * alignment of the first slide with the section's left edge. */
+ * alignment of the first slide with the section's left edge.
+ *
+ * The mask-image fades the rightmost ~140px of the track to transparent
+ * so tiles being clipped at the strip's right edge dissolve out instead
+ * of hard-cutting. Because the negative `margin-right` puts the track's
+ * own right edge AT the strip's overflow-clip line, mask 100% lines up
+ * with the visible right edge. As the track scrolls, the mask stays
+ * fixed to the track box, so incoming tiles fade in from the right and
+ * the leftmost tile stays crisp. */
 .track {
   display: flex;
   gap: 32px;
@@ -95,6 +103,18 @@
   padding-right: var(--pad);
   scroll-behavior: smooth;
   overscroll-behavior-x: contain;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(100% - 140px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(100% - 140px),
+    transparent 100%
+  );
 }
 .track::-webkit-scrollbar {
   display: none;
